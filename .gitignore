@@ -24,4 +24,17 @@ hs_err_pid*
 replay_pid*
 
 
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Maven (si deciden no usar el wrapper en equipo)
+.mvn/
+mvnw
+mvnw.cmd
+
+# Compilación
+target/
+
+
 .qodo/
