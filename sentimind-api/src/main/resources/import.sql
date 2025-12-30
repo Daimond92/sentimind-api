@@ -1,0 +1,2 @@
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('Excelente servicio', 'Positivo', 0.98, CURRENT_TIMESTAMP);
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('No me gustó el producto', 'Negativo', 0.85, CURRENT_TIMESTAMP);
