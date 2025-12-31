@@ -1,5 +1,7 @@
 package com.sentimind.sentimind_api.mapper;
 
+import java.time.LocalDateTime;
+
 import com.sentimind.sentimind_api.dto.SentimentRequest;
 import com.sentimind.sentimind_api.dto.SentimentResponse;
 import com.sentimind.sentimind_api.model.SentimentAnalysis;
@@ -23,10 +25,10 @@ public static SentimentResponse toResponse(SentimentAnalysis entity) {
 
     // Los Records se instancian pasando todos los argumentos al constructor
     return new SentimentResponse(
-        entity.getId(),
-        entity.getSentiment(),
-        entity.getConfidence(),
-        entity.getCreatedAt()
-    );
+    entity.getId(),
+    entity.getSentiment(),
+    entity.getConfidence(),
+    entity.getCreatedAt() != null ? entity.getCreatedAt() : LocalDateTime.now()
+);
 }
 }

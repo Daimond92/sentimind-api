@@ -18,24 +18,31 @@ public class SentimentServiceImpl implements SentimentService {
     }
 
     @Override
-    public SentimentResponse analyzeSentiment(SentimentRequest request) {
-        // 1. Lógica de "IA Simulada" (Mock Intelligence)
-        String text = request.text().toLowerCase();
-        String resultSentiment = "Negativo";
-        double confidence = 0.75;
+public SentimentResponse analyzeSentiment(SentimentRequest request) {
+    String text = request.text().toLowerCase();
+    
+    String resultSentiment;
+    double confidence;
 
-        if (text.contains("bueno") || text.contains("excelente") || text.contains("increíble")) {
-            resultSentiment = "Positivo";
-            confidence = 0.95;
-        }
-
-        // 2. Uso del Mapper para crear la Entidad
-        SentimentAnalysis entity = SentimentMapper.toEntity(request, resultSentiment, confidence);
-
-        // 3. Guardar en DB
-        SentimentAnalysis savedEntity = sentimentRepository.save(entity);
-
-        // 4. Uso del Mapper para devolver la Respuesta
-        return SentimentMapper.toResponse(savedEntity);
+    // 1. Lógica para POSITIVO
+    if (text.contains("bueno") || text.contains("excelente") || text.contains("increíble") || text.contains("maravillosa")) {
+        resultSentiment = "Positivo";
+        confidence = 0.95;
+    } 
+    // 2. Lógica para NEGATIVO (Agregamos palabras clave negativas)
+    else if (text.contains("malo") || text.contains("terrible") || text.contains("horrible") || text.contains("pésimo")) {
+        resultSentiment = "Negativo";
+        confidence = 0.90;
+    } 
+    // 3. Lógica para NEUTRO (Si no es ninguna de las anteriores)
+    else {
+        resultSentiment = "Neutro";
+        confidence = 0.70;
     }
+
+    SentimentAnalysis entity = SentimentMapper.toEntity(request, resultSentiment, confidence);
+    SentimentAnalysis savedEntity = sentimentRepository.save(entity);
+
+    return SentimentMapper.toResponse(savedEntity);
+}
 }
