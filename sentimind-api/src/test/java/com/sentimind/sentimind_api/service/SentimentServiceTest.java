@@ -30,18 +30,21 @@ class SentimentServiceTest {
     private SentimentRequest positiveRequest;
     private SentimentRequest negativeRequest;
     private SentimentRequest neutralRequest;
+    private SentimentRequest specialCharsRequest;
+    private SentimentRequest upperCaseRequest;
 
     @BeforeEach
     void setUp() {
         positiveRequest = new SentimentRequest("Este producto es excelente y maravillosa calidad");
         negativeRequest = new SentimentRequest("Horrible experiencia, terrible y malo servicio pésimo");
         neutralRequest = new SentimentRequest("El producto llegó en tiempo y forma según lo esperado");
+        specialCharsRequest = new SentimentRequest("¡Excelente! Muy bueno :) #happy 😊");
+        upperCaseRequest = new SentimentRequest("EXCELENTE PRODUCTO, MUY BUENO Y MARAVILLOSO");
     }
 
     @Test
     @DisplayName("Debe analizar texto positivo correctamente")
     void testAnalyzePositiveSentiment() {
-
         SentimentAnalysis mockEntity = new SentimentAnalysis();
         mockEntity.setId(1L);
         mockEntity.setText(positiveRequest.text());
@@ -61,7 +64,6 @@ class SentimentServiceTest {
     @Test
     @DisplayName("Debe analizar texto negativo correctamente")
     void testAnalyzeNegativeSentiment() {
-
         SentimentAnalysis mockEntity = new SentimentAnalysis();
         mockEntity.setId(2L);
         mockEntity.setText(negativeRequest.text());
@@ -81,7 +83,6 @@ class SentimentServiceTest {
     @Test
     @DisplayName("Debe analizar texto neutro correctamente")
     void testAnalyzeNeutralSentiment() {
-
         SentimentAnalysis mockEntity = new SentimentAnalysis();
         mockEntity.setId(3L);
         mockEntity.setText(neutralRequest.text());
@@ -95,6 +96,46 @@ class SentimentServiceTest {
         assertNotNull(response);
         assertEquals("Neutro", response.sentiment(), "Debe detectar sentimiento neutro");
         assertEquals(0.70, response.confidence());
+        verify(sentimentRepository, times(1)).save(any(SentimentAnalysis.class));
+    }
+
+    @Test
+    @DisplayName("Debe manejar texto con caracteres especiales")
+    void testSpecialCharacters() {
+        SentimentAnalysis mockEntity = new SentimentAnalysis();
+        mockEntity.setId(4L);
+        mockEntity.setText(specialCharsRequest.text());
+        mockEntity.setSentiment("Positivo");
+        mockEntity.setConfidence(0.95);
+
+        when(sentimentRepository.save(any(SentimentAnalysis.class))).thenReturn(mockEntity);
+
+        SentimentResponse response = sentimentService.analyzeSentiment(specialCharsRequest);
+
+        assertNotNull(response, "La respuesta no debe ser null");
+        assertEquals("Positivo", response.sentiment(),
+                "Debe detectar sentimiento positivo incluso con caracteres especiales");
+        assertEquals(0.95, response.confidence());
+        verify(sentimentRepository, times(1)).save(any(SentimentAnalysis.class));
+    }
+
+    @Test
+    @DisplayName("Debe ser case-insensitive (detectar palabras en mayúsculas)")
+    void testCaseInsensitive() {
+        SentimentAnalysis mockEntity = new SentimentAnalysis();
+        mockEntity.setId(5L);
+        mockEntity.setText(upperCaseRequest.text());
+        mockEntity.setSentiment("Positivo");
+        mockEntity.setConfidence(0.95);
+
+        when(sentimentRepository.save(any(SentimentAnalysis.class))).thenReturn(mockEntity);
+
+        SentimentResponse response = sentimentService.analyzeSentiment(upperCaseRequest);
+
+        assertNotNull(response);
+        assertEquals("Positivo", response.sentiment(),
+                "Debe detectar 'excelente' incluso si está en MAYÚSCULAS");
+        assertEquals(0.95, response.confidence());
         verify(sentimentRepository, times(1)).save(any(SentimentAnalysis.class));
     }
 }

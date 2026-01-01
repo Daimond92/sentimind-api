@@ -86,4 +86,22 @@ class SentimentControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"));
     }
+
+    @Test
+    @DisplayName("GET /swagger-ui.html - Debe estar accesible")
+    void testSwaggerUIAccessible() throws Exception {
+        mockMvc.perform(get("/swagger-ui.html"))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @DisplayName("GET /v3/api-docs - Debe devolver documentación OpenAPI")
+    void testOpenAPIDocsAccessible() throws Exception {
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.openapi").exists())
+                .andExpect(jsonPath("$.info.title").exists());
+    }
+
+
 }
