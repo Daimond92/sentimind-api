@@ -2,47 +2,61 @@ package com.sentimind.sentimind_api.service.impl;
 
 import com.sentimind.sentimind_api.dto.SentimentRequest;
 import com.sentimind.sentimind_api.dto.SentimentResponse;
+import com.sentimind.sentimind_api.dto.AiModelResponse;
 import com.sentimind.sentimind_api.model.SentimentAnalysis;
 import com.sentimind.sentimind_api.repository.SentimentRepository;
 import com.sentimind.sentimind_api.service.SentimentService;
-import com.sentimind.sentimind_api.mapper.SentimentMapper; // Importas tu mapper
+import com.sentimind.sentimind_api.mapper.SentimentMapper;
+import com.sentimind.sentimind_api.client.SentimentClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SentimentServiceImpl implements SentimentService {
 
-    private final SentimentRepository sentimentRepository;
+    @Value("${ai.integration.enabled:false}")
+    private boolean isAiEnabled;
 
-    public SentimentServiceImpl(SentimentRepository sentimentRepository) {
-        this.sentimentRepository = sentimentRepository;
+    private final SentimentClient aiClient;
+    private final SentimentRepository repository;
+    private final SentimentMapper mapper;
+
+    public SentimentServiceImpl(SentimentClient aiClient, SentimentRepository repository, SentimentMapper mapper) {
+        this.aiClient = aiClient;
+        this.repository = repository;
+        this.mapper = mapper;
+    }
+
+    private String simulateSentiment(String text) {
+        String lowerText = text.toLowerCase();
+        if (lowerText.contains("excelente") || lowerText.contains("bueno") || lowerText.contains("maravilloso")) {
+            return "Positivo";
+        } else if (lowerText.contains("malo") || lowerText.contains("terrible") || lowerText.contains("horrible")) {
+            return "Negativo";
+        } else {
+            return "Neutral";
+        }
     }
 
     @Override
-public SentimentResponse analyzeSentiment(SentimentRequest request) {
-    String text = request.text().toLowerCase();
-    
-    String resultSentiment;
-    double confidence;
+    public SentimentResponse analyzeSentiment(SentimentRequest request) {
+        String sentiment;
+        double confidence;
 
-    // 1. Lógica para POSITIVO
-    if (text.contains("bueno") || text.contains("excelente") || text.contains("increíble") || text.contains("maravillosa")) {
-        resultSentiment = "Positivo";
-        confidence = 0.95;
-    } 
-    // 2. Lógica para NEGATIVO (Agregamos palabras clave negativas)
-    else if (text.contains("malo") || text.contains("terrible") || text.contains("horrible") || text.contains("pésimo")) {
-        resultSentiment = "Negativo";
-        confidence = 0.90;
-    } 
-    // 3. Lógica para NEUTRO (Si no es ninguna de las anteriores)
-    else {
-        resultSentiment = "Neutro";
-        confidence = 0.70;
+        if (isAiEnabled) {
+            // Ahora 'prediction' es un AiModelResponse
+            AiModelResponse prediction = aiClient.getAiPrediction(request.text());
+            
+            // Accedemos directamente a los campos del Record
+            sentiment = prediction.sentiment();
+            confidence = prediction.confidence();
+        } else {
+            sentiment = simulateSentiment(request.text());
+            confidence = 0.95;
+        }
+
+        SentimentAnalysis entity = mapper.toEntity(request, sentiment, confidence);
+
+        return mapper.toResponse(repository.save(entity));
     }
-
-    SentimentAnalysis entity = SentimentMapper.toEntity(request, resultSentiment, confidence);
-    SentimentAnalysis savedEntity = sentimentRepository.save(entity);
-
-    return SentimentMapper.toResponse(savedEntity);
-}
 }
