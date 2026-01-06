@@ -24,10 +24,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class PostgreSQLIntegrationTest {
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test");
+    @SuppressWarnings("resource") // Indica al IDE que el ciclo de vida lo maneja la extensión de Testcontainers
+    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
+        .withDatabaseName("testdb")
+        .withUsername("test")
+        .withPassword("test");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {

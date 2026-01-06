@@ -2,6 +2,7 @@ package com.sentimind.sentimind_api.service.impl;
 
 import com.sentimind.sentimind_api.dto.SentimentRequest;
 import com.sentimind.sentimind_api.dto.SentimentResponse;
+import com.sentimind.sentimind_api.dto.AiModelResponse;
 import com.sentimind.sentimind_api.model.SentimentAnalysis;
 import com.sentimind.sentimind_api.repository.SentimentRepository;
 import com.sentimind.sentimind_api.service.SentimentService;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SentimentServiceImpl implements SentimentService {
 
-    @Value("${ai.integration.enabled:false}") // Por defecto usamos el Mock (falso)
+    @Value("${ai.integration.enabled:false}")
     private boolean isAiEnabled;
 
     private final SentimentClient aiClient;
@@ -27,24 +28,28 @@ public class SentimentServiceImpl implements SentimentService {
     }
 
     private String simulateSentiment(String text) {
-    String lowerText = text.toLowerCase();
-    if (lowerText.contains("excelente") || lowerText.contains("bueno") || lowerText.contains("maravilloso")) {
-        return "Positivo";
-    } else if (lowerText.contains("malo") || lowerText.contains("terrible") || lowerText.contains("horrible")) {
-        return "Negativo";
-    } else {
-        return "Neutral";
+        String lowerText = text.toLowerCase();
+        if (lowerText.contains("excelente") || lowerText.contains("bueno") || lowerText.contains("maravilloso")) {
+            return "Positivo";
+        } else if (lowerText.contains("malo") || lowerText.contains("terrible") || lowerText.contains("horrible")) {
+            return "Negativo";
+        } else {
+            return "Neutral";
+        }
     }
-    }
+
     @Override
     public SentimentResponse analyzeSentiment(SentimentRequest request) {
         String sentiment;
         double confidence;
 
         if (isAiEnabled) {
-            var prediction = aiClient.getAiPrediction(request.text());
-            sentiment = (String) prediction.getOrDefault("sentiment", "Neutral");
-            confidence = (Double) prediction.getOrDefault("confidence", 0.0);
+            // Ahora 'prediction' es un AiModelResponse
+            AiModelResponse prediction = aiClient.getAiPrediction(request.text());
+            
+            // Accedemos directamente a los campos del Record
+            sentiment = prediction.sentiment();
+            confidence = prediction.confidence();
         } else {
             sentiment = simulateSentiment(request.text());
             confidence = 0.95;
