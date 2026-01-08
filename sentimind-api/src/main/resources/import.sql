@@ -1,0 +1,10 @@
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('Este producto superó todas mis expectativas. La calidad es excelente y el servicio al cliente fue increíble.', 'Positivo', 0.95, CURRENT_TIMESTAMP);
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('Experiencia absolutamente horrible. El producto llegó dañado y el servicio fue pésimo.', 'Negativo', 0.92, CURRENT_TIMESTAMP);
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('El producto cumple con lo prometido. Nada extraordinario pero tampoco malo.', 'Neutro', 0.75, CURRENT_TIMESTAMP);
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('Increíble servicio, rápido y eficiente. Totalmente recomendado, volveré a comprar sin duda.', 'Positivo', 0.88, CURRENT_TIMESTAMP);
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('Terrible calidad, definitivamente no vale el precio. Me arrepiento de esta compra.', 'Negativo', 0.85, CURRENT_TIMESTAMP);
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('Producto estándar, funciona como se esperaba. Sin sorpresas positivas ni negativas.', 'Neutro', 0.70, CURRENT_TIMESTAMP);
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('Maravillosa experiencia de compra. El equipo fue muy amable y profesional.', 'Positivo', 0.90, CURRENT_TIMESTAMP);
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('Decepcionante. Esperaba mucho más por el precio que pagué.', 'Negativo', 0.78, CURRENT_TIMESTAMP);
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('El empaque era bueno y llegó a tiempo. El producto es correcto.', 'Neutro', 0.65, CURRENT_TIMESTAMP);
+INSERT INTO sentiment_analysis (text, sentiment, confidence, created_at) VALUES ('Fantástico en todos los sentidos. Calidad premium y atención excepcional.', 'Positivo', 0.93, CURRENT_TIMESTAMP);
