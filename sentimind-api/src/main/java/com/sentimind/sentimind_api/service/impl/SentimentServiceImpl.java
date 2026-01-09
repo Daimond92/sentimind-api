@@ -8,6 +8,9 @@ import com.sentimind.sentimind_api.service.SentimentService;
 import com.sentimind.sentimind_api.mapper.SentimentMapper; // Importas tu mapper
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class SentimentServiceImpl implements SentimentService {
 
@@ -44,5 +47,15 @@ public SentimentResponse analyzeSentiment(SentimentRequest request) {
     SentimentAnalysis savedEntity = sentimentRepository.save(entity);
 
     return SentimentMapper.toResponse(savedEntity);
-}
+    }
+
+    @Override
+    public List<SentimentResponse> getAllAnalysis() {
+        List<SentimentAnalysis> allEntities = sentimentRepository.findAll();
+
+        return allEntities.stream()
+                .map(SentimentMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
 }
