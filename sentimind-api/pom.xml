@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.sentimind</groupId>
-    <artifactId>sentimind-api</artifactId>
+    <artifactId>sentimind-api</artifactId>   
     <version>0.0.1-SNAPSHOT</version>
     <name>sentimind-api</name>
     <description>Demo project for Spring Boot</description>
@@ -48,13 +48,6 @@
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -108,6 +101,10 @@
             <artifactId>junit-jupiter</artifactId>
             <version>1.19.3</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
     </dependencies>
 
