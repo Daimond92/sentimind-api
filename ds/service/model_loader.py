@@ -1,5 +1,6 @@
 import joblib
 import logging
+import os
 
 # Configuración de logs
 logging.basicConfig(level=logging.INFO)
@@ -39,5 +40,9 @@ class ModelPredictor:
             logger.error(f"Error en inferencia: {e}")
             return None, str(e)
 
+# Buscamos la ruta absoluta al modelo subiendo un nivel desde ds/service hacia ds/models
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(BASE_DIR, "models", "sentiment_pipeline.joblib")
+
 # Instanciamos el predictor para ser importado por la app
-predictor = ModelPredictor('sentiment_pipeline.joblib')
+predictor = ModelPredictor(MODEL_PATH)

@@ -57,3 +57,11 @@ build/
 ### VS Code ###
 .vscode/
 .vscode/NEWLY_CREATED_BY_SPRING_INITIALIZR
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Directorios de distribución/paquetes
+ds/service/__pycache__/
