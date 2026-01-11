@@ -30,7 +30,7 @@ public SentimentResponse toResponse(SentimentAnalysis entity) {
     entity.getId(),
     entity.getSentiment(),
     entity.getConfidence(),
-    entity.getCreatedAt() != null ? entity.getCreatedAt() : LocalDateTime.now()
+    entity.getCreatedAt() != null ? entity.getCreatedAt() : LocalDateTime.now(), entity.getText()
 );
 }
 }

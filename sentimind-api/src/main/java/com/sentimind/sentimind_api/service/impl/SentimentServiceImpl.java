@@ -11,6 +11,9 @@ import com.sentimind.sentimind_api.client.SentimentClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class SentimentServiceImpl implements SentimentService {
 
@@ -58,5 +61,13 @@ public class SentimentServiceImpl implements SentimentService {
         SentimentAnalysis entity = mapper.toEntity(request, sentiment, confidence);
 
         return mapper.toResponse(repository.save(entity));
+    }
+    @Override
+    public List<SentimentResponse> getAllAnalysis() {
+        List<SentimentAnalysis> allEntities = repository.findAll();
+
+        return allEntities.stream()
+                .map(mapper::toResponse)
+                .collect(Collectors.toList());
     }
 }

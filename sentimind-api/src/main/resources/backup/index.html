@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentimind - Análisis de Sentimientos</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Splash del logo -->
+  <div id="logo-screen">
+    <img src="./sentimind-logo.png" alt="Sentimind Logo" id="logo" />
+  </div>
+
+  <!-- Página principal -->
+  <div id="main-content">
+    <div class="container">
+      <h1>
+        Sentimind
+        <img src="./log2.png" alt="Log2" class="log2" />
+      </h1>
+      <p class="subtitle">Análisis de Sentimientos con IA</p>
+
+      <label for="reviewText">Escribe tu reseña o comentario:</label>
+      <textarea id="reviewText" rows="6" maxlength="500" placeholder="Ejemplo: Este producto es excelente..."></textarea>
+      <div class="char-counter"><span id="charCount">0</span> / 500</div>
+
+      <button id="analyzeBtn">Analizar Sentimiento</button>
+
+      <div class="loader" id="loader"><div class="spinner"></div><p>Analizando...</p></div>
+
+      <div class="result" id="result">
+        <div class="emoji" id="resultEmoji"></div>
+        <div class="result-title" id="resultSentiment"></div>
+        <p style="text-align:center" id="resultConfidence"></p>
+      </div>
+
+      <div class="error" id="error"></div>
+
+      <footer>
+        <img src="./log3.png" alt="Log3 - Empresas" class="log3" />
+      </footer>
+    </div>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

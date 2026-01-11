@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sentimind</title>
+    <meta name="description" content="Historial de análisis de sentimientos realizados">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/dashboard.css">
+</head>
+<body>
+<main id="main-content" style="opacity: 1;">
+    <div class="container dashboard-container">
+        <!-- Header -->
+        <header>
+            <h1>
+                 Historial de Análisis
+                <img src="/log2.png" alt="" class="log2" width="40" height="40" aria-hidden="true" />
+            </h1>
+            <p class="subtitle">Análisis guardados en la base de datos</p>
+        </header>
+
+        <!-- Stats Summary -->
+        <section class="stats-summary" aria-label="Estadísticas generales">
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-info">
+                    <p class="stat-value" id="totalAnalysis">-</p>
+                    <p class="stat-label">Total Análisis</p>
+                </div>
+            </div>
+            <div class="stat-card positive">
+                <div class="stat-icon">😊</div>
+                <div class="stat-info">
+                    <p class="stat-value" id="totalPositive">-</p>
+                    <p class="stat-label">Positivos</p>
+                </div>
+            </div>
+            <div class="stat-card negative">
+                <div class="stat-icon">😞</div>
+                <div class="stat-info">
+                    <p class="stat-value" id="totalNegative">-</p>
+                    <p class="stat-label">Negativos</p>
+                </div>
+            </div>
+            <div class="stat-card neutral">
+                <div class="stat-icon">😐</div>
+                <div class="stat-info">
+                    <p class="stat-value" id="totalNeutral">-</p>
+                    <p class="stat-label">Neutrales</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters -->
+        <section class="filters" aria-label="Filtros de búsqueda">
+            <select id="filterSentiment" class="filter-select" aria-label="Filtrar por sentimiento">
+                <option value="all">Todos los sentimientos</option>
+                <option value="positivo">Positivos</option>
+                <option value="negativo">Negativos</option>
+                <option value="neutro">Neutrales</option>
+            </select>
+
+            <button id="refreshBtn" class="refresh-btn" aria-label="Actualizar datos">
+                🔄 Actualizar
+            </button>
+        </section>
+
+        <!-- Loading State -->
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+            <p>Cargando historial...</p>
+        </div>
+
+        <!-- Results List -->
+        <section id="resultsList" class="results-list" aria-label="Lista de análisis">
+            <!-- Se llenará dinámicamente con JavaScript -->
+        </section>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">📭</div>
+            <h3>No hay análisis guardados</h3>
+            <p>Realiza tu primer análisis para ver los resultados aquí</p>
+            <a href="/" class="btn-primary">Hacer un Análisis</a>
+        </div>
+
+        <!-- Error State -->
+        <div class="error-state" id="errorState" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <h3>Error al cargar datos</h3>
+            <p id="errorMessage">No se pudo conectar con el servidor</p>
+            <button id="retryBtn" class="btn-secondary">Reintentar</button>
+        </div>
+
+        <!-- Navigation al final -->
+        <nav style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <a href="/" class="back-link">← Volver al Análisis</a>
+        </nav>
+    </div>
+</main>
+
+<script src="/dashboard.js"></script>
+</body>
+</html>

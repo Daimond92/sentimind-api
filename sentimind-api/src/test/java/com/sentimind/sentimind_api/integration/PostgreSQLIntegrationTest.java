@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles("testcontainers")
 @Testcontainers
 @DisplayName("PostgreSQL Integration Tests")
 class PostgreSQLIntegrationTest {
