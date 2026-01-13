@@ -1,7 +1,17 @@
 const CONFIG = {
-  API_BASE_URL: window.location.hostname === 'localhost'
-    ? "http://localhost:8080/api/v1"
-    : "https://api.sentimind.com/api/v1",
+  // Detección automática de entorno
+  API_BASE_URL: (() => {
+    // Desarrollo local
+    if (window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1') {
+      return "http://localhost:8080/api/v1";
+    }
+
+    // Producción: Detectar automáticamente (funciona para Ngrok y OCI)
+    const protocol = window.location.protocol; // http: o https:
+    const host = window.location.host; // hostname:puerto
+    return `${protocol}//${host}/api/v1`;
+  })(),
   MIN_TEXT_LENGTH: 10,
   MAX_TEXT_LENGTH: 500,
   SPLASH_DURATION: 1200,
