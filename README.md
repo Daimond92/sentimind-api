@@ -1,6 +1,6 @@
 # 🧠 Sentimind API - Análisis de Sentimiento
 
-Sentimind es una API REST desarrollada con **Spring Boot** diseñada para procesar reseñas de usuarios y clasificar su sentimiento mediante un modelo de lógica computacional (**Mock AI** en Fase 1).
+Sentimind es una API REST profesional desarrollada con **Spring Boot** diseñada para procesar reseñas de usuarios y clasificar su sentimiento mediante una arquitectura robusta y escalable, preparada para integración con IA.
 
 ---
 
@@ -12,42 +12,46 @@ Sentimind es una API REST desarrollada con **Spring Boot** diseñada para proces
 | **Modelo** | **TF-IDF (N-gramas 1-2) + Logistic Regression**<br>✅ **Accuracy: 67.1% **<br>✅ **Recall Negativos: 83.5%**|
 | **Dataset** | **Amazon Reviews ES**<br>✅ **400 muestras por clase (Total Test: 1205)**<br>✅ **Dataset 100% Balanceado (Negativo/Neutro/Positivo) |
 
-### 💻 Equipo Backend
-* **Java:** 17 o 21 (LTS)
-* **Spring Boot:** 3.x.x
-* **Maven:** 3.8+
-* **Base de Datos:** H2 (In-memory) / Soporte para PostgreSQL.
-* **Documentación:** Swagger UI (OpenAPI 3.0).
+### 💻 Stack Tecnológico
+* **Java:** 17 (LTS)
+* **Spring Boot:** 3.5.9
+* **Gestor de Dependencias:** Maven
+* **Base de Datos:** PostgreSQL 15 (Producción) / H2 (Pruebas)
+* **Contenedores:** Docker & Docker Compose
+* **Seguridad:** Spring Security (En proceso)
+* **Documentación:** Swagger UI (OpenAPI 3.0)
 
 ---
 
-## 🚀 Cómo ejecutar el proyecto
+## 🚀 Ejecución con Docker (Flujo Completo)
 
-1. **Clonar el repositorio:**
+Para levantar la API junto con la base de datos PostgreSQL de forma automática, sigue estos pasos:
+
+1. **Clonar y navegar al proyecto:**
    ```bash
-   git clone https://github.com/Daimond92/sentimind-api.git
+   git clone [https://github.com/Daimond92/sentimind-api.git](https://github.com/Daimond92/sentimind-api.git)
    cd sentimind-api
    ```
-2. Abrir en VS Code:
-* Asegúrate de tener instalado el Extension Pack for Java.
-* Abre la carpeta raíz `sentimind-api`.
+2. **Lanzar contenedores:** Asegúrate de tener Docker Desktop iniciado y ejecuta:
+   ```bash
+   docker compose up --build
+   ```
+3. La API estará operativa en: `http://localhost:8080`.
 
-3. Ejecutar la aplicación:
-* Localiza el archivo: `src/main/java/com/sentimind/sentimind_api/SentimindApiApplication.java`.
-* Haz clic en el botón **"Run"** sobre el método `main`.
-* La API estará lista cuando veas en consola: `Started SentimindApiApplication on port 8080`.
+## 📡 Endpoints Principales
+`Base URL: /api/v1/sentiment`
 
-## 📡 Ejemplo de Petición y Respuesta
-El endpoint principal permite enviar un texto para ser analizado y guardado en la base de datos.
-`Endpoint: POST /api/v1/sentiment`
+### 📤 Analizar Sentimiento
+#### POST `/`
+* **Request Body (JSON):**
 
-### Ejemplo de Petición (Request JSON):
 ``` bash
 {
   "text": "La comida estuvo excelente y el servicio fue muy rápido."
 }
 ```
-### Ejemplo de Respuesta (Response JSON):
+
+* **Response Body (JSON):**
 ``` bash
 {
   "id": 1,
@@ -57,17 +61,17 @@ El endpoint principal permite enviar un texto para ser analizado y guardado en l
 }
 ```
 
-## 🧪 Cómo probar el endpoint
+## ⚙️ Arquitectura y Lógica de Predicción
+El sistema utiliza un diseño híbrido controlado por la propiedad `ai.integration.enabled`:
 
-### Opción A: Postman / Insomnia
-1. Crea una nueva petición tipo POST.
-2. URL: `http://localhost:8080/api/v1/sentiment`
-3. En la pestaña **Body**, selecciona **raw** y formato **JSON**.
-4. Pega el ejemplo de petición arriba mencionado y dale a **Send**.
+1. **Normalización:** El texto se procesa en minúsculas para una detección precisa.
 
-### Opción B: Swagger UI (Interfaz Visual)
-* Una vez encendida la API, entra desde tu navegador a: 👉 [swagger](http://localhost:8080/swagger-ui.html) 
-* Desde allí puedes interactuar con los endpoints de forma visual.
+2. **Lógica Lexicon (Mock AI):** 
+* **Positivo:** Detecta términos como excelente, bueno, maravilloso.
+* **Negativo:** Detecta términos como malo, terrible, horrible.
+* **Neutral:** Asignado automáticamente si no hay coincidencias clave.
+3. **Persistencia:** Mapeo mediante `SentimentMapper` y guardado en **PostgreSQL**.
+4. **Auditoría:** Uso de `@EnableJpaAuditing` para gestionar el campo `created_at` sin intervención manual.
 
 ## ⚙️ Inteligencia Artificial y Lógica del Modelo
 A diferencia de sistemas basados en reglas fijas, SentiMind utiliza un pipeline de Procesamiento de Lenguaje Natural (NLP) real:
@@ -80,8 +84,18 @@ A diferencia de sistemas basados en reglas fijas, SentiMind utiliza un pipeline 
 * El modelo ha sido optimizado para priorizar la sensibilidad ante quejas, logrando identificar comentarios "Negativos" con una tasa de acierto (Recall) del 83.5%.
 * **Persistencia:** El resultado se mapea a una Entidad JPA y se guarda automáticamente en la base de datos H2 con su respectiva marca de tiempo.
 
-## 📊 Calidad y Pruebas
-Para asegurar la fiabilidad de la lógica de análisis, contamos con una suite de pruebas:
+## 🛡️ Seguridad e Integridad
+* **Spring Security:** Endpoints protegidos para evitar accesos no autorizados.
+* **Java Records:** DTOs inmutables para una transferencia de datos segura.
+* **Validaciones:** Control estricto de entrada de datos mediante anotaciones de Jakarta Bean Validation.
+
+## 🧪 Pruebas de Demo (Cadenas Largas)
+
+| Sentimiento | Palabra Clave Sugerida | Resultado Esperado |
+| :--- | :--- | :--- |
+| **Positivo** | "maravilloso", "excelente", "bueno" | `Sentiment: Positivo (95%)` |
+| **Neutral** | (Sin palabras clave específicas) | `Sentiment: Neutral (95%)` |
+| **Negativo** | "terrible", "horrible", "malo" | `Sentiment: Negativo (95%)` |
 
 * **Pruebas Unitarias:** Verificación de la lógica del `SentimentService` usando JUnit 5.
 * **Pruebas de Integración:** Validación de los endpoints mediante `MockMvc`.
@@ -93,3 +107,9 @@ Los recursos del modelo se encuentran en la carpeta /models:
 sentiment_pipeline_ternario_v2.pkl: Pipeline listo para producción.
 
 notebooks/EDA_and_Training.ipynb: Documentación del proceso de entrenamiento y limpieza de datos.
+## 📊 Monitoreo e Inspección
+* **Swagger UI:** Pruébalo en vivo en http://localhost:8080/swagger-ui.html
+* **Acceso a DB (Docker):**
+``` bash
+docker exec -it sentimind-db psql -U user_admin -d sentimind_db
+```

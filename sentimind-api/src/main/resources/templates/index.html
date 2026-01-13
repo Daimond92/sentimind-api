@@ -1,48 +1,224 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sentimind - Análisis de Sentimientos</title>
-  <link rel="stylesheet" href="./style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Sentimind - Análisis de Sentimientos con IA</title>
+    <meta name="description" content="Analiza el sentimiento de tus textos con inteligencia artificial. Resultados precisos en tiempo real.">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <!-- Splash del logo -->
-  <div id="logo-screen">
-    <img src="./sentimind-logo.png" alt="Sentimind Logo" id="logo" />
-  </div>
+<!-- Splash Screen -->
+<div id="logo-screen" role="presentation" aria-hidden="true">
+    <img src="/sentimind-logo.png" alt="Sentimind Logo" id="logo" width="260" height="260" />
+</div>
 
-  <!-- Página principal -->
-  <div id="main-content">
+<!-- Main Content -->
+<main id="main-content">
     <div class="container">
-      <h1>
-        Sentimind
-        <img src="./log2.png" alt="Log2" class="log2" />
-      </h1>
-      <p class="subtitle">Análisis de Sentimientos con IA</p>
+        <!-- Header -->
+        <header>
+            <h1>
+                Sentimind
+                <img src="/log2.png" alt="" class="log2" width="40" height="40" aria-hidden="true" />
+            </h1>
+            <p class="subtitle">Análisis de Sentimientos con IA</p>
+        </header>
 
-      <label for="reviewText">Escribe tu reseña o comentario:</label>
-      <textarea id="reviewText" rows="6" maxlength="500" placeholder="Ejemplo: Este producto es excelente..."></textarea>
-      <div class="char-counter"><span id="charCount">0</span> / 500</div>
+        <!-- Form Section -->
+        <section aria-label="Formulario de análisis">
+            <label for="reviewText">
+                Escribe tu reseña o comentario:
+                <span class="sr-only">(mínimo 10 caracteres)</span>
+            </label>
+            <textarea
+                    id="reviewText"
+                    name="reviewText"
+                    rows="6"
+                    maxlength="500"
+                    placeholder="Ejemplo: Este producto es excelente, superó mis expectativas..."
+                    aria-label="Texto para analizar"
+                    aria-describedby="charCount"
+                    spellcheck="true"
+                    autocomplete="off"
+                    required
+            ></textarea>
+            <div class="char-counter" id="charCountContainer" aria-live="polite">
+                <span id="charCount">0</span> / 500
+            </div>
 
-      <button id="analyzeBtn">Analizar Sentimiento</button>
+            <button id="analyzeBtn" type="button" aria-controls="result">
+                Analizar Sentimiento
+            </button>
 
-      <div class="loader" id="loader"><div class="spinner"></div><p>Analizando...</p></div>
+            <!-- Link al Dashboard -->
+            <nav style="text-align: center; margin-top: 15px;">
+                <a href="/dashboard.html" class="dashboard-link" aria-label="Ver historial de análisis">
+                    📊 Ver Historial de Análisis
+                </a>
+            </nav>
+        </section>
 
-      <div class="result" id="result">
-        <div class="emoji" id="resultEmoji"></div>
-        <div class="result-title" id="resultSentiment"></div>
-        <p style="text-align:center" id="resultConfidence"></p>
-      </div>
+        <!-- Loader -->
+        <div class="loader" id="loader" role="status" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
+            <p>Analizando tu texto...</p>
+        </div>
 
-      <div class="error" id="error"></div>
+        <!-- Result -->
+        <section class="result" id="result" role="region" aria-live="polite">
+            <div class="emoji" id="resultEmoji" aria-hidden="true" role="img"></div>
+            <h2 class="result-title" id="resultSentiment"></h2>
+            <p id="resultConfidence"></p>
+            <!-- Mostrar ID y Timestamp -->
+            <div class="result-metadata">
+                <p id="resultId" class="result-id"></p>
+                <p id="resultTimestamp" class="result-timestamp"></p>
+            </div>
+        </section>
 
-      <footer>
-        <img src="./log3.png" alt="Log3 - Empresas" class="log3" />
-      </footer>
+        <!-- Error Message -->
+        <div class="error" id="error" role="alert" aria-live="assertive"></div>
+
+        <!-- Footer-->
+        <footer>
+            <div class="footer-divider"></div>
+            <p class="footer-text">En colaboración con</p>
+            <div class="footer-logos">
+                <a
+                        href="https://www.oracle.com/latam/education/oracle-next-education/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="footer-logo-link"
+                        aria-label="Visitar Oracle Next Education"
+                >
+                    <img
+                            src="/one.png"
+                            alt="Oracle Next Education"
+                            class="footer-logo"
+                            loading="lazy"
+                    />
+                </a>
+                <a
+                        href="https://www.aluracursos.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="footer-logo-link"
+                        aria-label="Visitar Alura Latam"
+                >
+                    <img
+                            src="/alura.png"
+                            alt="Alura Latam"
+                            class="footer-logo"
+                            loading="lazy"
+                    />
+                </a>
+                <a
+                        href="https://nocountry.tech/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="footer-logo-link"
+                        aria-label="Visitar NoCountry"
+                >
+                    <img
+                            src="/nocountry-logo.png"
+                            alt="NoCountry"
+                            class="footer-logo"
+                            loading="lazy"
+                    />
+                </a>
+            </div>
+            <p class="footer-copyright">
+                Sentimind API © 2026 - Análisis de sentimientos con IA
+            </p>
+        </footer>
     </div>
-  </div>
+</main>
 
-  <script src="./script.js"></script>
+<!-- Screen Reader Only -->
+<style>
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+
+    /* Estilos del link al dashboard */
+    .dashboard-link {
+        display: inline-block;
+        padding: 8px 16px;
+        background: rgba(56, 189, 248, 0.1);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        border-radius: 8px;
+        color: var(--color-primary);
+        text-decoration: none;
+        font-size: 0.9em;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .dashboard-link:hover {
+        background: rgba(56, 189, 248, 0.2);
+        transform: translateY(-2px);
+    }
+
+    /* Estilos para metadata del resultado */
+    .result-metadata {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 0.85em;
+        opacity: 0.9;
+    }
+
+    .result-id, .result-timestamp {
+        margin: 5px 0;
+    }
+
+    /* Indicador de modo offline */
+    .result.offline-mode {
+        border: 2px dashed #facc15 !important;
+    }
+
+    .result.offline-mode::before {
+        content: "⚠️ MODO OFFLINE";
+        display: block;
+        background: rgba(250, 204, 21, 0.2);
+        padding: 8px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        font-size: 0.85em;
+        font-weight: 600;
+    }
+
+    /* Estilos para warnings */
+    .warning {
+        display: none;
+        background: #f59e0b;
+        color: #fff;
+        padding: 12px;
+        border-radius: 10px;
+        margin-top: 15px;
+        font-weight: 500;
+    }
+
+    .warning.active {
+        display: block;
+        animation: slideIn 0.4s;
+    }
+</style>
+
+<script src="/script.js"></script>
 </body>
 </html>

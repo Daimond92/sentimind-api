@@ -6,5 +6,6 @@ public record SentimentResponse(
     Long id,
     String sentiment,
     double confidence,
-    LocalDateTime timestamp
+    LocalDateTime timestamp,
+    String text
 ){}

@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # Base de Datos
+  db:
+    image: postgres:15-alpine
+    container_name: sentimind-db
+    restart: always
+    environment:
+      POSTGRES_DB: sentimind_db
+      POSTGRES_USER: user_admin
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Backend + Frontend
+  app:
+    build: .
+    container_name: sentimind-api
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=sentimind_db
+      - DB_USERNAME=user_admin
+      - DB_PASSWORD=password123
+      - AI_INTEGRATION_ENABLED=false
+      - AI_API_URL=http://host.docker.internal:5000/predict
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

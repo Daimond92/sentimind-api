@@ -5,11 +5,13 @@ import java.time.LocalDateTime;
 import com.sentimind.sentimind_api.dto.SentimentRequest;
 import com.sentimind.sentimind_api.dto.SentimentResponse;
 import com.sentimind.sentimind_api.model.SentimentAnalysis;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SentimentMapper {
 
     // Convierte el DTO de entrada en la Entidad para la DB
-    public static SentimentAnalysis toEntity(SentimentRequest request, String sentiment, double confidence) {
+    public SentimentAnalysis toEntity(SentimentRequest request, String sentiment, double confidence) {
     if (request == null) return null;
 
     SentimentAnalysis entity = new SentimentAnalysis();
@@ -20,7 +22,7 @@ public class SentimentMapper {
     return entity;
 }
 
-public static SentimentResponse toResponse(SentimentAnalysis entity) {
+public SentimentResponse toResponse(SentimentAnalysis entity) {
     if (entity == null) return null;
 
     // Los Records se instancian pasando todos los argumentos al constructor
@@ -28,7 +30,7 @@ public static SentimentResponse toResponse(SentimentAnalysis entity) {
     entity.getId(),
     entity.getSentiment(),
     entity.getConfidence(),
-    entity.getCreatedAt() != null ? entity.getCreatedAt() : LocalDateTime.now()
+    entity.getCreatedAt() != null ? entity.getCreatedAt() : LocalDateTime.now(), entity.getText()
 );
 }
 }
