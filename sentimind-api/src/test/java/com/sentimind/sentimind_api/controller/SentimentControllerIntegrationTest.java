@@ -11,10 +11,10 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.security.test.context.support.WithMockUser;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,6 +36,7 @@ class SentimentControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /api/v1/sentiment - Debe analizar sentimiento positivo")
     void testAnalyzeSentimentPositive() throws Exception {
         mockMvc.perform(post("/api/v1/sentiment")
@@ -48,6 +49,7 @@ class SentimentControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /api/v1/sentiment - Debe rechazar texto vacío")
     void testAnalyzeSentimentEmptyText() throws Exception {
         SentimentRequest emptyRequest = new SentimentRequest("");
@@ -60,6 +62,7 @@ class SentimentControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /api/v1/sentiment - Debe rechazar texto muy corto")
     void testAnalyzeSentimentTooShort() throws Exception {
         SentimentRequest shortRequest = new SentimentRequest("Hola");
@@ -71,6 +74,7 @@ class SentimentControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /api/v1/sentiment - Debe rechazar texto muy largo")
     void testAnalyzeSentimentTooLong() throws Exception {
         SentimentRequest longRequest = new SentimentRequest("a".repeat(501));
