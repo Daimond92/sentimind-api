@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/sentiment")
 @Tag(name = "Sentiment Analysis", description = "Endpoints para el procesamiento y análisis de reseñas")
@@ -31,5 +33,11 @@ public class SentimentController {
         
         // Retornamos un 201 Created o 200 OK
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+    @GetMapping("/all")
+    @Operation(summary = "Obtiene todos los análisis de sentimiento guardados en la base de datos")
+    public ResponseEntity<List<SentimentResponse>> getAllAnalysis() {
+        List<SentimentResponse> allAnalysis = sentimentService.getAllAnalysis();
+        return ResponseEntity.ok(allAnalysis);
     }
 }

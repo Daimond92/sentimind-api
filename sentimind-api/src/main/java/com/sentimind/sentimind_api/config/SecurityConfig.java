@@ -25,12 +25,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())  // Deshabilitar CSRF para APIs REST
-                .authorizeHttpRequests(auth -> auth //
-                        .requestMatchers("/health", "/actuator/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .httpBasic(httpBasic -> {});
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                // Permitir acceso público al frontend y recursos estáticos
+                .requestMatchers("/", "/index.html", "/dashboard.html", 
+                                 "/*.css", "/*.js", "/*.png", "/*.jpg", "/*.svg", 
+                                 "/*.ico", "/favicon.ico", "/manifest.json").permitAll()
+                //  Permitir health checks y documentación
+                .requestMatchers("/health", "/actuator/**", 
+                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .anyRequest().authenticated()
+            )
+            .httpBasic(httpBasic -> {});
 
         return http.build();
     }
@@ -38,10 +44,10 @@ public class SecurityConfig {
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
         UserDetails user = User.builder()
-                .username(username)
-                .password(passwordEncoder().encode(password))
-                .roles("USER")
-                .build();
+            .username(username)
+            .password(passwordEncoder().encode(password))
+            .roles("USER")
+            .build();
 
         return new InMemoryUserDetailsManager(user);
     }

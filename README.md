@@ -7,8 +7,10 @@ Sentimind es una API REST profesional desarrollada con **Spring Boot** diseñada
 ## 🛠️ Tecnologías y Versiones
 
 ### 🤖 Equipo Data Science
-* **Modelo:** 
-* **Dataset:** 
+| Componente | Detalle |
+|------------|---------|
+| **Modelo** | **TF-IDF (N-gramas 1-2) + Logistic Regression**<br>✅ **Accuracy: 67.1% **<br>✅ **Recall Negativos: 83.5%**|
+| **Dataset** | **Amazon Reviews ES**<br>✅ **400 muestras por clase (Total Test: 1205)**<br>✅ **Dataset 100% Balanceado (Negativo/Neutro/Positivo) |
 
 ### 💻 Stack Tecnológico
 * **Java:** 17 (LTS)
@@ -71,6 +73,17 @@ El sistema utiliza un diseño híbrido controlado por la propiedad `ai.integrati
 3. **Persistencia:** Mapeo mediante `SentimentMapper` y guardado en **PostgreSQL**.
 4. **Auditoría:** Uso de `@EnableJpaAuditing` para gestionar el campo `created_at` sin intervención manual.
 
+## ⚙️ Inteligencia Artificial y Lógica del Modelo
+A diferencia de sistemas basados en reglas fijas, SentiMind utiliza un pipeline de Procesamiento de Lenguaje Natural (NLP) real:
+
+1. **Vectorización Semántica:** Utilizamos TF-IDF con un rango de n-gramas de (1, 2). Esto permite que el modelo entienda no solo palabras sueltas, sino también conceptos compuestos (ej: "no bueno").
+2. **Búsqueda de Palabras Clave:** El algoritmo rastrea el texto buscando términos positivos predefinidos (excelente, bueno, increíble, feliz).
+3. **Cálculo de Confianza:** 
+* Si detecta palabras positivas, asigna el sentimiento **"Positivo"** con una confianza del **95%**.
+* Precisión General: El sistema clasifica los sentimientos con una confianza promedio (Accuracy) del 67.1%, asegurando un equilibrio entre las categorías Positivo, Neutro y Negativo sin sobreajuste (overfitting).
+* El modelo ha sido optimizado para priorizar la sensibilidad ante quejas, logrando identificar comentarios "Negativos" con una tasa de acierto (Recall) del 83.5%.
+* **Persistencia:** El resultado se mapea a una Entidad JPA y se guarda automáticamente en la base de datos H2 con su respectiva marca de tiempo.
+
 ## 🛡️ Seguridad e Integridad
 * **Spring Security:** Endpoints protegidos para evitar accesos no autorizados.
 * **Java Records:** DTOs inmutables para una transferencia de datos segura.
@@ -84,6 +97,16 @@ El sistema utiliza un diseño híbrido controlado por la propiedad `ai.integrati
 | **Neutral** | (Sin palabras clave específicas) | `Sentiment: Neutral (95%)` |
 | **Negativo** | "terrible", "horrible", "malo" | `Sentiment: Negativo (95%)` |
 
+* **Pruebas Unitarias:** Verificación de la lógica del `SentimentService` usando JUnit 5.
+* **Pruebas de Integración:** Validación de los endpoints mediante `MockMvc`.
+* **Datos Iniciales:** Carga automática de registros en `import.sql` para demostración inmediata.
+
+##📦 Artefactos de Data Science
+Los recursos del modelo se encuentran en la carpeta /models:
+
+sentiment_pipeline_ternario_v2.pkl: Pipeline listo para producción.
+
+notebooks/EDA_and_Training.ipynb: Documentación del proceso de entrenamiento y limpieza de datos.
 ## 📊 Monitoreo e Inspección
 * **Swagger UI:** Pruébalo en vivo en http://localhost:8080/swagger-ui.html
 * **Acceso a DB (Docker):**
