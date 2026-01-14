@@ -34,8 +34,6 @@ public class SecurityConfig {
                 //  Permitir health checks y documentación
                 .requestMatchers("/health", "/actuator/**", 
                                  "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                //  Proteger solo la API
-                .requestMatchers("/api/**").authenticated()
                 .anyRequest().authenticated()
             )
             .httpBasic(httpBasic -> {});
