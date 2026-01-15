@@ -16,10 +16,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${security.user.name}")
+    @Value("${spring.security.user.name}")
     private String username;
 
-    @Value("${security.user.password}")
+    @Value("${spring.security.user.password}")
     private String password;
 
     @Bean
@@ -34,6 +34,7 @@ public class SecurityConfig {
                 //  Permitir health checks y documentación
                 .requestMatchers("/health", "/actuator/**", 
                                  "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/api/v1/sentiment/**").permitAll()
                 .anyRequest().authenticated()
             )
             .httpBasic(httpBasic -> {});
