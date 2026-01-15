@@ -22,15 +22,17 @@ app = FastAPI(
 def post_predict(data: InputData):
     text_to_process = data.text
     try:
-        label, probability = predictor.predict(text_to_process)
-        if label is None:
+        prediction, probability = predictor.predict(text_to_process)
+        
+        if prediction is None:
             logger.error("El modelo devolvió una predicción nula.")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                 detail="Error interno en el motor de predicción."
             )
-        return{
-            "prevision": label,
+            
+        return {
+            "prevision": prediction, 
             "probabilidad": probability
         }
     except Exception as e:
