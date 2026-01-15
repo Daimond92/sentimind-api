@@ -1,6 +1,10 @@
 package com.sentimind.sentimind_api.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record AiModelResponse(
-    String sentiment,
-    double confidence
+
+    String prevision,
+    Double probabilidad
 ) {}
