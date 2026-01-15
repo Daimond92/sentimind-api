@@ -1,73 +1,68 @@
 package com.sentimind.sentimind_api.service.impl;
 
-import com.sentimind.sentimind_api.dto.SentimentRequest;
-import com.sentimind.sentimind_api.dto.SentimentResponse;
-import com.sentimind.sentimind_api.dto.AiModelResponse;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import com.sentimind.sentimind_api.dto.*;
 import com.sentimind.sentimind_api.model.SentimentAnalysis;
 import com.sentimind.sentimind_api.repository.SentimentRepository;
 import com.sentimind.sentimind_api.service.SentimentService;
-import com.sentimind.sentimind_api.mapper.SentimentMapper;
-import com.sentimind.sentimind_api.client.SentimentClient;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class SentimentServiceImpl implements SentimentService {
 
-    @Value("${ai.integration.enabled:false}")
-    private boolean isAiEnabled;
+    private final WebClient webClient;
+    private final SentimentRepository sentimentRepository;
 
-    private final SentimentClient aiClient;
-    private final SentimentRepository repository;
-    private final SentimentMapper mapper;
-
-    public SentimentServiceImpl(SentimentClient aiClient, SentimentRepository repository, SentimentMapper mapper) {
-        this.aiClient = aiClient;
-        this.repository = repository;
-        this.mapper = mapper;
-    }
-
-    private String simulateSentiment(String text) {
-        String lowerText = text.toLowerCase();
-        if (lowerText.contains("excelente") || lowerText.contains("bueno") || lowerText.contains("maravilloso")) {
-            return "Positivo";
-        } else if (lowerText.contains("malo") || lowerText.contains("terrible") || lowerText.contains("horrible")) {
-            return "Negativo";
-        } else {
-            return "Neutral";
-        }
+    public SentimentServiceImpl(WebClient.Builder webClientBuilder, SentimentRepository sentimentRepository) {
+        // Conexión con la API de Python
+        this.webClient = webClientBuilder.baseUrl("http://sentimind-ai:8000").build();
+        this.sentimentRepository = sentimentRepository;
     }
 
     @Override
-    public SentimentResponse analyzeSentiment(SentimentRequest request) {
-        String sentiment;
-        double confidence;
+public SentimentResponse analyzeSentiment(SentimentRequest request) {
+    // 1. Llamada a la API de Python
+    AiModelResponse aiResponse = this.webClient.post()
+            .uri("/predict")
+            .bodyValue(Map.of("text", request.text()))
+            .retrieve()
+            .bodyToMono(AiModelResponse.class)
+            .block();
 
-        if (isAiEnabled) {
-            // Ahora 'prediction' es un AiModelResponse
-            AiModelResponse prediction = aiClient.getAiPrediction(request.text());
-            
-            // Accedemos directamente a los campos del Record
-            sentiment = prediction.sentiment();
-            confidence = prediction.confidence();
-        } else {
-            sentiment = simulateSentiment(request.text());
-            confidence = 0.95;
-        }
+    // 2. Uso del modelo SentimentAnalysis.java
+    SentimentAnalysis analysis = new SentimentAnalysis();
+    analysis.setText(request.text()); 
+    
+    // USANDO LOS CAMPOS EXACTOS DE TU AiModelResponse
+    analysis.setSentiment(aiResponse.prevision());   // Antes era aiResponse.sentiment()
+    analysis.setConfidence(aiResponse.probabilidad()); // Antes era aiResponse.confidence()
 
-        SentimentAnalysis entity = mapper.toEntity(request, sentiment, confidence);
+    // 3. Guardado en la base de datos
+    SentimentAnalysis saved = sentimentRepository.save(analysis);
 
-        return mapper.toResponse(repository.save(entity));
-    }
+    // 4. Retorno del DTO final
+    return new SentimentResponse(
+            saved.getId(),         
+            saved.getSentiment(),  
+            saved.getConfidence(), 
+            saved.getCreatedAt(),  // Se mapea al campo 'timestamp' de tu record
+            saved.getText()        
+    );
+}
+
     @Override
     public List<SentimentResponse> getAllAnalysis() {
-        List<SentimentAnalysis> allEntities = repository.findAll();
-
-        return allEntities.stream()
-                .map(mapper::toResponse)
+        return sentimentRepository.findAll().stream()
+                .map(saved -> new SentimentResponse(
+                        saved.getId(),
+                        saved.getSentiment(),
+                        saved.getConfidence(),
+                        saved.getCreatedAt(),
+                        saved.getText()
+                ))
                 .collect(Collectors.toList());
     }
 }

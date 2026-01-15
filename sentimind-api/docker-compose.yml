@@ -15,6 +15,15 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+# Microservicio de Python (IA)
+  # Asegúrate de tener el código de Python en una carpeta llamada 'python-service' al mismo nivel
+  ai-service:
+    build: ../ds # Ruta a donde está el Dockerfile de Python
+    container_name: sentimind-ai
+    restart: always
+    ports:
+      - "8000:8000"
+
   # Backend + Frontend
   app:
     build: .
@@ -28,10 +37,11 @@ services:
       - DB_NAME=sentimind_db
       - DB_USERNAME=user_admin
       - DB_PASSWORD=password123
-      - AI_INTEGRATION_ENABLED=false
-      - AI_API_URL=http://host.docker.internal:5000/predict
+      - AI_INTEGRATION_ENABLED=true
+      - AI_API_URL=http://ai-service:8000/predict
     depends_on:
       - db
+      - ai-service
 
 volumes:
   postgres_data:
