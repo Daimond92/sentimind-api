@@ -2,7 +2,7 @@ import logging
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
 # Importamos la instancia del predictor desde el otro archivo
-from model_loader import predictor
+from .model_loader import predictor
 
 # Configuración de logs del microservicio
 logging.basicConfig(level=logging.INFO)

@@ -1,7 +1,17 @@
 const CONFIG = {
-  API_BASE_URL: window.location.hostname === 'localhost'
-    ? "http://localhost:8080/api/v1"
-    : "https://api.sentimind.com/api/v1",
+  // Detección automática de entorno
+  API_BASE_URL: (() => {
+    // Desarrollo local
+    if (window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1') {
+      return "http://localhost:8080/api/v1";
+    }
+
+    // Producción: Detectar automáticamente (funciona para Ngrok y OCI)
+    const protocol = window.location.protocol; // http: o https:
+    const host = window.location.host; // hostname:puerto
+    return `${protocol}//${host}/api/v1`;
+  })(),
   AUTH: {
     USERNAME: 'usuario',
     PASSWORD: '123456'
@@ -79,7 +89,7 @@ const getSentimentClass = (sentiment) => {
 
 // Truncar texto largo
 const truncateText = (text, maxLength = 150) => {
-  // ✅ Validación: Si text es undefined, null o vacío
+  //  text es undefined, null o vacío
   if (!text || typeof text !== 'string') {
     return 'Sin texto disponible';
   }
@@ -193,7 +203,7 @@ const renderAnalysisList = () => {
   });
 
   container.innerHTML = sortedAnalysis.map(analysis => {
-    // ✅ Validación: Asegurar que todos los campos existen
+    // Asegurar que todos los campos existen
     const sentiment = analysis.sentiment || 'Desconocido';
     const confidence = typeof analysis.confidence === 'number' ? analysis.confidence : 0;
     const text = analysis.text || 'Sin texto disponible';
