@@ -23,26 +23,26 @@ class ModelPredictor:
             return None
 
     def predict(self, text: str):
-        prediction: int
         if self.model is None:
             return None, "Modelo no disponible"
         
         try:
             prediction = self.model.predict([text])[0]
-            label = 'positivo' if prediction else "negativo"
+            prediction = str(prediction).lower()
+            # Obtenemos la probabilidad si el modelo lo permite
+            probability = 0.0
             if hasattr(self.model, "predict_proba"):
                 probas = self.model.predict_proba([text])[0]
                 probability = float(max(probas))
-            else:
-                None
-            return label, probability
+            
+            return prediction, probability
         except Exception as e:
             logger.error(f"Error en inferencia: {e}")
             return None, str(e)
 
 # Buscamos la ruta absoluta al modelo subiendo un nivel desde ds/service hacia ds/models
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = os.path.join(BASE_DIR, "models", "sentiment_pipeline.joblib")
+MODEL_PATH = os.path.join(BASE_DIR, "models", "sentiment_pipeline_ternario_v2.pkl")
 
 # Instanciamos el predictor para ser importado por la app
 predictor = ModelPredictor(MODEL_PATH)
