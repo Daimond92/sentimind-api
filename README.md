@@ -32,7 +32,23 @@ Para levantar la API junto con la base de datos PostgreSQL de forma automática,
    git clone [https://github.com/Daimond92/sentimind-api.git](https://github.com/Daimond92/sentimind-api.git)
    cd sentimind-api
    ```
-2. **Lanzar contenedores:** Asegúrate de tener Docker Desktop iniciado y ejecuta:
+2. **Lanzar contenedores:** Asegúrate de tener Docker Desktop iniciado y ejecuta en una terminal en la carpeta raíz `sentimind-api` donde se encuentra el archivo `docker-compose.yml`:
+   * Primero ejecuta:
+   ```bash
+   cd sentimind-api
+   ```
+
+   * Segundo ejecuta:
+   ```bash
+   ./mvnw clean package -DskipTests
+   ```
+
+   * Tercero ejecuta:
+   ```bash
+   cd ..
+   ```
+
+   * Cuarto ejecuta:
    ```bash
    docker compose up --build
    ```
