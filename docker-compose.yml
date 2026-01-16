@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Base de Datos
+  # 1. Base de Datos (PostgreSQL)
   db:
     image: postgres:15-alpine
     container_name: sentimind-db
@@ -15,18 +15,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-# Microservicio de Python (IA)
-  # Asegúrate de tener el código de Python en una carpeta llamada 'python-service' al mismo nivel
+  # 2. Motor de IA (Python)
   ai-service:
-    build: ../ds # Ruta a donde está el Dockerfile de Python
+    build: ./sentimind-ai
     container_name: sentimind-ai
     restart: always
     ports:
-      - "8000:8000"
+      - "5000:5000"
 
-  # Backend + Frontend
+  # 3. Backend + Frontend (Java)
   app:
-    build: .
+    build: ./sentimind-api
     container_name: sentimind-api
     restart: always
     ports:
@@ -37,8 +36,8 @@ services:
       - DB_NAME=sentimind_db
       - DB_USERNAME=user_admin
       - DB_PASSWORD=password123
-      - AI_INTEGRATION_ENABLED=true
-      - AI_API_URL=http://ai-service:8000/predict
+      - AI_API_URL=http://ai-service:5000/predict
+      - SPRING_PROFILES_ACTIVE=prod
     depends_on:
       - db
       - ai-service
