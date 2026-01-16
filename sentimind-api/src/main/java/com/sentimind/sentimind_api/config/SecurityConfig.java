@@ -35,7 +35,7 @@ public class SecurityConfig {
                         // Permitir acceso público al frontend y recursos estáticos
                         .requestMatchers("/", "/index.html", "/dashboard.html",
                                 "/*.css", "/*.js", "/*.png", "/*.jpg", "/*.svg",
-                                "/*.ico", "/favicon.ico", "/manifest.json").permitAll()
+                                "/*.ico", "/favicon.ico", "/manifest.json", "/backup/**").permitAll()
                         //  Permitir health checks y documentación
                         .requestMatchers("/health", "/actuator/**",
                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
