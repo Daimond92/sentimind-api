@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Base de Datos
+  # 1. Base de Datos (PostgreSQL)
   db:
     image: postgres:15-alpine
     container_name: sentimind-db
@@ -15,9 +15,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Backend + Frontend
+  # 2. Motor de IA (Python)
+  ai-service:
+    build: ./sentimind-ai
+    container_name: sentimind-ai
+    restart: always
+    ports:
+      - "5000:5000"
+
+  # 3. Backend + Frontend (Java)
   app:
-    build: .
+    build: ./sentimind-api
     container_name: sentimind-api
     restart: always
     ports:
@@ -28,10 +36,11 @@ services:
       - DB_NAME=sentimind_db
       - DB_USERNAME=user_admin
       - DB_PASSWORD=password123
-      - AI_INTEGRATION_ENABLED=false
-      - AI_API_URL=http://host.docker.internal:5000/predict
+      - AI_API_URL=http://ai-service:5000/predict
+      - SPRING_PROFILES_ACTIVE=prod
     depends_on:
       - db
+      - ai-service
 
 volumes:
   postgres_data:

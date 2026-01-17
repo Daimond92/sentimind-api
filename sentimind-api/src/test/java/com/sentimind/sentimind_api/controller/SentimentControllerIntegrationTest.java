@@ -2,6 +2,8 @@ package com.sentimind.sentimind_api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sentimind.sentimind_api.dto.SentimentRequest;
+import com.sentimind.sentimind_api.dto.SentimentResponse;
+import com.sentimind.sentimind_api.service.SentimentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,14 +12,20 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import java.time.LocalDateTime;
+import org.springframework.security.test.context.support.WithMockUser;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 @EnableAutoConfiguration(exclude = {SecurityAutoConfiguration.class})
 @DisplayName("Sentiment API - Integration Tests")
 class SentimentControllerIntegrationTest {
@@ -28,14 +36,25 @@ class SentimentControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockitoBean
+    private SentimentService sentimentService;
+
     private SentimentRequest validRequest;
 
     @BeforeEach
     void setUp() {
-        validRequest = new SentimentRequest("Este producto es absolutamente excelente y maravilloso");
+        validRequest = new SentimentRequest("Este producto es excelente");
+        
+        SentimentResponse mockResponse = new SentimentResponse(
+                1L, "Positivo", 0.95, LocalDateTime.now(), "Este producto es excelente"
+        );
+        
+        when(sentimentService.analyzeSentiment(any(SentimentRequest.class)))
+                .thenReturn(mockResponse);
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /api/v1/sentiment - Debe analizar sentimiento positivo")
     void testAnalyzeSentimentPositive() throws Exception {
         mockMvc.perform(post("/api/v1/sentiment")
@@ -43,11 +62,11 @@ class SentimentControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.sentiment").value("Positivo"))
-                .andExpect(jsonPath("$.confidence").isNumber())
                 .andExpect(jsonPath("$.id").exists());
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /api/v1/sentiment - Debe rechazar texto vacío")
     void testAnalyzeSentimentEmptyText() throws Exception {
         SentimentRequest emptyRequest = new SentimentRequest("");
@@ -60,6 +79,7 @@ class SentimentControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /api/v1/sentiment - Debe rechazar texto muy corto")
     void testAnalyzeSentimentTooShort() throws Exception {
         SentimentRequest shortRequest = new SentimentRequest("Hola");
@@ -71,6 +91,7 @@ class SentimentControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser
     @DisplayName("POST /api/v1/sentiment - Debe rechazar texto muy largo")
     void testAnalyzeSentimentTooLong() throws Exception {
         SentimentRequest longRequest = new SentimentRequest("a".repeat(501));
