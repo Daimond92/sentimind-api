@@ -28,6 +28,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 @ActiveProfiles("test")
 @EnableAutoConfiguration(exclude = {SecurityAutoConfiguration.class})
 @DisplayName("Sentiment API - Integration Tests")
+@WithMockUser
 class SentimentControllerIntegrationTest {
 
     @Autowired
@@ -57,7 +58,7 @@ class SentimentControllerIntegrationTest {
     @WithMockUser
     @DisplayName("POST /api/v1/sentiment - Debe analizar sentimiento positivo")
     void testAnalyzeSentimentPositive() throws Exception {
-        mockMvc.perform(post("/api/v1/sentiment")
+        mockMvc.perform(post("/api/v1/sentiment/analyze")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validRequest)))
                 .andExpect(status().isCreated())
@@ -71,7 +72,7 @@ class SentimentControllerIntegrationTest {
     void testAnalyzeSentimentEmptyText() throws Exception {
         SentimentRequest emptyRequest = new SentimentRequest("");
 
-        mockMvc.perform(post("/api/v1/sentiment")
+        mockMvc.perform(post("/api/v1/sentiment/analyze")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(emptyRequest)))
                 .andExpect(status().isBadRequest())
@@ -84,10 +85,11 @@ class SentimentControllerIntegrationTest {
     void testAnalyzeSentimentTooShort() throws Exception {
         SentimentRequest shortRequest = new SentimentRequest("Hola");
 
-        mockMvc.perform(post("/api/v1/sentiment")
+        mockMvc.perform(post("/api/v1/sentiment/analyze")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(shortRequest)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.text").value("Por favor ingresa una reseña que contenga entre 10 y 500 caracteres"));
     }
 
     @Test
@@ -96,10 +98,11 @@ class SentimentControllerIntegrationTest {
     void testAnalyzeSentimentTooLong() throws Exception {
         SentimentRequest longRequest = new SentimentRequest("a".repeat(501));
 
-        mockMvc.perform(post("/api/v1/sentiment")
+        mockMvc.perform(post("/api/v1/sentiment/analyze")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(longRequest)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").exists());
     }
 
     @Test
