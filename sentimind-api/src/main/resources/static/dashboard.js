@@ -12,10 +12,6 @@ const CONFIG = {
     const host = window.location.host; // hostname:puerto
     return `${protocol}//${host}/api/v1`;
   })(),
-  AUTH: {
-    USERNAME: 'usuario',
-    PASSWORD: '123456'
-  },
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000
 };
@@ -42,12 +38,6 @@ const elements = {
   totalPositive: document.getElementById('totalPositive'),
   totalNegative: document.getElementById('totalNegative'),
   totalNeutral: document.getElementById('totalNeutral')
-};
-
-// Generar Basic Auth Header
-const getAuthHeader = () => {
-  const credentials = btoa(`${CONFIG.AUTH.USERNAME}:${CONFIG.AUTH.PASSWORD}`);
-  return `Basic ${credentials}`;
 };
 
 // Formatear fecha
@@ -89,7 +79,6 @@ const getSentimentClass = (sentiment) => {
 
 // Truncar texto largo
 const truncateText = (text, maxLength = 150) => {
-  //  text es undefined, null o vacío
   if (!text || typeof text !== 'string') {
     return 'Sin texto disponible';
   }
@@ -136,7 +125,6 @@ const loadAllAnalysis = async () => {
     const response = await fetchWithRetry(`${CONFIG.API_BASE_URL}/sentiment/all`, {
       method: 'GET',
       headers: {
-        'Authorization': getAuthHeader(),
         'Accept': 'application/json'
       }
     });
@@ -168,13 +156,13 @@ const loadAllAnalysis = async () => {
 const updateStats = () => {
   const total = state.allAnalysis.length;
   const positive = state.allAnalysis.filter(a =>
-    a.sentiment && a.sentiment.toLowerCase() === 'positivo'
+      a.sentiment && a.sentiment.toLowerCase() === 'positivo'
   ).length;
   const negative = state.allAnalysis.filter(a =>
-    a.sentiment && a.sentiment.toLowerCase() === 'negativo'
+      a.sentiment && a.sentiment.toLowerCase() === 'negativo'
   ).length;
   const neutral = state.allAnalysis.filter(a =>
-    a.sentiment && a.sentiment.toLowerCase() === 'neutro'
+      a.sentiment && a.sentiment.toLowerCase() === 'neutro'
   ).length;
 
   elements.totalAnalysis.textContent = total;
@@ -203,7 +191,6 @@ const renderAnalysisList = () => {
   });
 
   container.innerHTML = sortedAnalysis.map(analysis => {
-    // Asegurar que todos los campos existen
     const sentiment = analysis.sentiment || 'Desconocido';
     const confidence = typeof analysis.confidence === 'number' ? analysis.confidence : 0;
     const text = analysis.text || 'Sin texto disponible';
@@ -243,7 +230,7 @@ const filterAnalysis = (sentiment) => {
     state.filteredAnalysis = state.allAnalysis;
   } else {
     state.filteredAnalysis = state.allAnalysis.filter(a =>
-      a.sentiment && a.sentiment.toLowerCase() === sentiment
+        a.sentiment && a.sentiment.toLowerCase() === sentiment
     );
   }
 
@@ -287,7 +274,7 @@ elements.retryBtn.addEventListener('click', () => {
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Dashboard Sentimind v1.0.1 - Inicializado');
+  console.log('Dashboard Sentimind v1.0.2 - Inicializado');
   console.log('API Endpoint:', CONFIG.API_BASE_URL);
   loadAllAnalysis();
 });

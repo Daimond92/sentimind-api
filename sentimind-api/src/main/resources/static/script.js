@@ -21,12 +21,7 @@ const CONFIG = {
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000,
   AUTOSAVE_KEY: 'sentimind-draft',
-  AUTOSAVE_DEBOUNCE: 500,
-  // Credenciales de autenticación
-  AUTH: {
-    USERNAME: 'usuario',
-    PASSWORD: '123456'
-  }
+  AUTOSAVE_DEBOUNCE: 500
 };
 
 const CSS_CLASSES = {
@@ -47,13 +42,7 @@ const state = {
   isAnalyzing: false,
   lastAnalysisTime: 0,
   retryCount: 0,
-  isOfflineMode: false // Para modo offline
-};
-
-// Generar Basic Auth Header
-const getAuthHeader = () => {
-  const credentials = btoa(`${CONFIG.AUTH.USERNAME}:${CONFIG.AUTH.PASSWORD}`);
-  return `Basic ${credentials}`;
+  isOfflineMode: false
 };
 
 // SPLASH SCREEN
@@ -210,13 +199,13 @@ const validateInput = (text) => {
 
 const isValidResponse = (data) => {
   return data &&
-         typeof data === 'object' &&
-         'sentiment' in data &&
-         'confidence' in data &&
-         typeof data.sentiment === 'string' &&
-         typeof data.confidence === 'number' &&
-         data.confidence >= 0 &&
-         data.confidence <= 1;
+      typeof data === 'object' &&
+      'sentiment' in data &&
+      'confidence' in data &&
+      typeof data.sentiment === 'string' &&
+      typeof data.confidence === 'number' &&
+      data.confidence >= 0 &&
+      data.confidence <= 1;
 };
 
 // RATE LIMITING
@@ -246,7 +235,7 @@ const analyzeSentimentMock = (text) => {
     sentiment = 'Positivo';
     confidence = 0.85;
   } else if (lowerText.includes('malo') || lowerText.includes('terrible') ||
-             lowerText.includes('horrible') || lowerText.includes('pésimo')) {
+      lowerText.includes('horrible') || lowerText.includes('pésimo')) {
     sentiment = 'Negativo';
     confidence = 0.80;
   } else {
@@ -263,12 +252,11 @@ const analyzeSentimentMock = (text) => {
   };
 };
 
-// API CALL CON RETRY Y AUTH
+// API CALL CON RETRY
 const fetchWithRetry = async (url, options, attempt = 1) => {
   try {
     const response = await fetch(url, options);
 
-    // Manejo específico de error 401 (No autorizado)
     if (response.status === 401) {
       throw new Error('UNAUTHORIZED');
     }
@@ -280,11 +268,9 @@ const fetchWithRetry = async (url, options, attempt = 1) => {
         return fetchWithRetry(url, options, attempt + 1);
       }
 
-      // Capturar errores del GlobalExceptionHandler
       const errorData = await response.json().catch(() => ({}));
 
       if (errorData.errors) {
-        // Formato de error de validación
         const errorMessages = Object.values(errorData.errors).join('. ');
         throw new Error(errorMessages);
       }
@@ -334,13 +320,11 @@ async function analyzeSentiment() {
   state.lastAnalysisTime = Date.now();
 
   try {
-    // Headers con autenticación Basic Auth
     const response = await fetchWithRetry(`${CONFIG.API_BASE_URL}/sentiment`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": getAuthHeader() // Credenciales de Raúl
+        "Accept": "application/json"
       },
       body: JSON.stringify({ text: validation.text })
     });
@@ -358,7 +342,6 @@ async function analyzeSentiment() {
   } catch (err) {
     console.error("Error en análisis:", err);
 
-    // Modo offline si falla la conexión
     if (err.name === 'TypeError' || err.message.includes('Failed to fetch')) {
       console.warn('⚠️ Activando modo offline (Mock AI)');
       state.isOfflineMode = true;
@@ -378,7 +361,6 @@ async function analyzeSentiment() {
 const handleError = (err) => {
   let errorMessage = "Error desconocido";
 
-  // Errores específicos del backend
   if (err.message === 'UNAUTHORIZED') {
     errorMessage = "Error de autenticación. Por favor, contacta al administrador.";
   } else if (err.name === 'TypeError' && err.message.includes('fetch')) {
@@ -388,7 +370,6 @@ const handleError = (err) => {
   } else if (err.message.includes('timeout')) {
     errorMessage = "La solicitud tardó demasiado. Intenta con un texto más corto.";
   } else if (err.message.includes('caracteres')) {
-    // Error de validación del backend
     errorMessage = err.message;
   } else {
     errorMessage = err.message;
@@ -397,7 +378,7 @@ const handleError = (err) => {
   showError(errorMessage);
 };
 
-// Mostrar advertencias (diferente a errores)
+// Mostrar advertencias
 const showWarning = (msg) => {
   const warningEl = document.createElement('div');
   warningEl.className = 'warning active';
@@ -416,28 +397,22 @@ const displayResult = (data) => {
   const sentiment = data.sentiment.toLowerCase();
   const confidence = Math.round(data.confidence * 100);
 
-  // Obtener configuración ANTES de asignar valores
   const config = SENTIMENT_CONFIG[sentiment] || SENTIMENT_CONFIG.neutral;
 
-  // Actualizar emoji PRIMERO
   elements.resultEmoji.textContent = config.emoji;
-
-  // Luego actualizar textos
   elements.resultSentiment.textContent = capitalizeFirst(data.sentiment);
   elements.resultConfidence.textContent = `Confianza: ${confidence}%`;
 
-  // Mostrar ID y Timestamp
   if (elements.resultId) {
     elements.resultId.textContent = data.isOffline ?
-      'ID: Local (sin guardar)' :
-      `ID: ${data.id || 'N/A'}`;
+        'ID: Local (sin guardar)' :
+        `ID: ${data.id || 'N/A'}`;
   }
 
   if (elements.resultTimestamp) {
     elements.resultTimestamp.textContent = `Fecha: ${formatTimestamp(data.timestamp)}`;
   }
 
-  // Indicador visual de modo offline
   const offlineClass = data.isOffline ? 'offline-mode' : '';
   elements.result.className = `result ${CSS_CLASSES.ACTIVE} ${config.cssClass} ${offlineClass}`;
 
@@ -482,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadDraft();
   updateCharCount();
 
-  console.log('Sentimind v1.1.0 - Production (Auth Enabled)');
+  console.log('Sentimind v1.1.1 - Production (Public API)');
   console.log('API Endpoint:', CONFIG.API_BASE_URL);
 });
 
