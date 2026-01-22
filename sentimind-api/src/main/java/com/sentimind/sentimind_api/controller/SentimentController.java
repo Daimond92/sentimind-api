@@ -25,7 +25,7 @@ public class SentimentController {
         this.sentimentService = sentimentService;
     }
 
-    @PostMapping
+    @PostMapping("/analyze")
     @Operation(summary = "Analiza el sentimiento de un texto y lo guarda en la base de datos")
     public ResponseEntity<SentimentResponse> analyze(@Valid @RequestBody SentimentRequest request) {
         // Llama a tu lógica en el Service (David)
