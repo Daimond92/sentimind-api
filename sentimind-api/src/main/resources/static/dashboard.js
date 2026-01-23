@@ -1,17 +1,19 @@
 const CONFIG = {
   // Detección automática de entorno
   API_BASE_URL: (() => {
-    // Desarrollo local
     if (window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1') {
       return "http://localhost:8080/api/v1";
     }
-
-    // Producción: Detectar automáticamente (funciona para Ngrok y OCI)
-    const protocol = window.location.protocol; // http: o https:
-    const host = window.location.host; // hostname:puerto
+    const protocol = window.location.protocol;
+    const host = window.location.host;
     return `${protocol}//${host}/api/v1`;
   })(),
+  // Credenciales de autenticación (deben coincidir con application.properties)
+  AUTH: {
+    USERNAME: 'admin',
+    PASSWORD: '12345'
+  },
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000
 };
@@ -38,6 +40,12 @@ const elements = {
   totalPositive: document.getElementById('totalPositive'),
   totalNegative: document.getElementById('totalNegative'),
   totalNeutral: document.getElementById('totalNeutral')
+};
+
+// Generar Basic Auth Header
+const getAuthHeader = () => {
+  const credentials = btoa(`${CONFIG.AUTH.USERNAME}:${CONFIG.AUTH.PASSWORD}`);
+  return `Basic ${credentials}`;
 };
 
 // Formatear fecha
@@ -125,6 +133,7 @@ const loadAllAnalysis = async () => {
     const response = await fetchWithRetry(`${CONFIG.API_BASE_URL}/sentiment/all`, {
       method: 'GET',
       headers: {
+        'Authorization': getAuthHeader(),
         'Accept': 'application/json'
       }
     });
@@ -133,7 +142,6 @@ const loadAllAnalysis = async () => {
 
     console.log('Datos recibidos del backend:', data);
 
-    // Validar estructura de respuesta
     if (!Array.isArray(data)) {
       throw new Error('Respuesta inválida del servidor (no es un array)');
     }
@@ -183,7 +191,6 @@ const renderAnalysisList = () => {
 
   elements.emptyState.style.display = 'none';
 
-  // Ordenar por fecha (más recientes primero)
   const sortedAnalysis = [...state.filteredAnalysis].sort((a, b) => {
     const dateA = a.timestamp ? new Date(a.timestamp) : new Date(0);
     const dateB = b.timestamp ? new Date(b.timestamp) : new Date(0);
@@ -274,7 +281,7 @@ elements.retryBtn.addEventListener('click', () => {
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Dashboard Sentimind v1.0.2 - Inicializado');
+  console.log('Dashboard Sentimind v1.2.0 - Protected API');
   console.log('API Endpoint:', CONFIG.API_BASE_URL);
   loadAllAnalysis();
 });

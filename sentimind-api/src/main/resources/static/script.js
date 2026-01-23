@@ -1,15 +1,12 @@
 const CONFIG = {
   // Detección automática de entorno
   API_BASE_URL: (() => {
-    // Desarrollo local
     if (window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1') {
       return "http://localhost:8080/api/v1";
     }
-
-    // Producción: Detectar automáticamente (funciona para Ngrok y OCI)
-    const protocol = window.location.protocol; // http: o https:
-    const host = window.location.host; // hostname:puerto
+    const protocol = window.location.protocol;
+    const host = window.location.host;
     return `${protocol}//${host}/api/v1`;
   })(),
   MIN_TEXT_LENGTH: 10,
@@ -21,7 +18,12 @@ const CONFIG = {
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000,
   AUTOSAVE_KEY: 'sentimind-draft',
-  AUTOSAVE_DEBOUNCE: 500
+  AUTOSAVE_DEBOUNCE: 500,
+  // Credenciales de autenticación (deben coincidir con application.properties)
+  AUTH: {
+    USERNAME: 'admin',
+    PASSWORD: '12345'
+  }
 };
 
 const CSS_CLASSES = {
@@ -29,6 +31,12 @@ const CSS_CLASSES = {
   POSITIVE: 'positive',
   NEGATIVE: 'negative',
   NEUTRAL: 'neutral'
+};
+
+const SENTIMENT_CONFIG = {
+  positive: { emoji: '😊', cssClass: CSS_CLASSES.POSITIVE },
+  negative: { emoji: '😞', cssClass: CSS_CLASSES.NEGATIVE },
+  neutral: { emoji: '😐', cssClass: CSS_CLASSES.NEUTRAL }
 };
 
 // ESTADO GLOBAL
@@ -39,22 +47,27 @@ const state = {
   isOfflineMode: false
 };
 
+// Generar Basic Auth Header
+const getAuthHeader = () => {
+  const credentials = btoa(`${CONFIG.AUTH.USERNAME}:${CONFIG.AUTH.PASSWORD}`);
+  return `Basic ${credentials}`;
+};
+
 // SPLASH SCREEN
 window.addEventListener("load", () => {
   const logoScreen = document.getElementById("logo-screen");
   const mainContent = document.getElementById("main-content");
 
-  // Visible 1.2s, difuminado 1.6s
   setTimeout(() => {
     logoScreen.style.opacity = 0;
     setTimeout(() => {
-      logoScreen.style.display = "none";
+      logoScreen.remove();
       mainContent.style.opacity = 1;
     }, CONFIG.SPLASH_FADE_DURATION);
   }, CONFIG.SPLASH_DURATION);
 });
 
-// Referencias de elementos
+// REFERENCIAS DE ELEMENTOS
 const elements = {
   textarea: document.getElementById('reviewText'),
   charCount: document.getElementById('charCount'),
@@ -69,18 +82,89 @@ const elements = {
   resultTimestamp: document.getElementById('resultTimestamp')
 };
 
-// Utilidades
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const capitalizeFirst = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-const sanitizeText = (text) => text.trim().replace(/\s+/g, ' ');
-const isSpamText = (text) => /^(.)\1{9,}$/.test(text) || /^[^a-záéíóúñ]*$/i.test(text);
-const formatTimestamp = (ts) => ts ? new Date(ts).toLocaleString('es-ES') : 'N/A';
+// UTILIDADES
+const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
 
-// Contador de caracteres
-elements.textarea.addEventListener('input', () => {
+const capitalizeFirst = (str) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+const sanitizeText = (text) => {
+  return text.trim().replace(/\s+/g, ' ');
+};
+
+const isSpamText = (text) => {
+  const repeatedChar = /(.)\1{9,}/;
+  return repeatedChar.test(text);
+};
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Formatear fecha/hora
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return 'N/A';
+  const date = new Date(timestamp);
+  return date.toLocaleString('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+// AUTOSAVE FUNCIONALIDAD
+const autosave = debounce((value) => {
+  try {
+    if (value.length > 0) {
+      localStorage.setItem(CONFIG.AUTOSAVE_KEY, value);
+    } else {
+      localStorage.removeItem(CONFIG.AUTOSAVE_KEY);
+    }
+  } catch (err) {
+    console.warn('No se pudo guardar el borrador:', err);
+  }
+}, CONFIG.AUTOSAVE_DEBOUNCE);
+
+const loadDraft = () => {
+  try {
+    const draft = localStorage.getItem(CONFIG.AUTOSAVE_KEY);
+    if (draft) {
+      elements.textarea.value = draft;
+      updateCharCount();
+    }
+  } catch (err) {
+    console.warn('No se pudo cargar el borrador:', err);
+  }
+};
+
+// CONTADOR DE CARACTERES
+const updateCharCount = () => {
   const count = elements.textarea.value.length;
   elements.charCount.textContent = count;
-  elements.charCount.style.color = count < 10 ? '#f87171' : count > 480 ? '#facc15' : '#22c55e';
+
+  if (count < CONFIG.MIN_TEXT_LENGTH) {
+    elements.charCount.style.color = '#f87171';
+  } else if (count > 480) {
+    elements.charCount.style.color = '#facc15';
+  } else {
+    elements.charCount.style.color = '#22c55e';
+  }
+};
+
+elements.textarea.addEventListener('input', () => {
+  updateCharCount();
+  autosave(elements.textarea.value);
 });
 
 // EVENTOS
@@ -176,7 +260,7 @@ const analyzeSentimentMock = (text) => {
   };
 };
 
-// API CALL CON RETRY
+// API CALL CON RETRY Y AUTH
 const fetchWithRetry = async (url, options, attempt = 1) => {
   try {
     const response = await fetch(url, options);
@@ -219,52 +303,51 @@ const fetchWithRetry = async (url, options, attempt = 1) => {
 
 // FUNCIÓN PRINCIPAL DE ANÁLISIS
 async function analyzeSentiment() {
-  const text = elements.textarea.value.trim();
-  
-  // Validación
+  if (state.isAnalyzing) {
+    showError('Ya hay un análisis en progreso');
+    return;
+  }
+
+  const text = elements.textarea.value;
+
   const validation = validateInput(text);
   if (!validation.valid) {
     showError(validation.error);
     return;
   }
 
-  // Rate limiting
   const rateCheck = checkRateLimit();
   if (!rateCheck.allowed) {
     showError(rateCheck.error);
     return;
   }
 
-  // Reset estado de resultado y error
-  elements.result.className = "result";
-  elements.error.classList.remove("active");
-
-  // Loading ON
-  elements.analyzeBtn.disabled = true;
-  elements.loader.classList.add("active");
+  resetUI();
+  setLoadingState(true);
   state.isAnalyzing = true;
+  state.lastAnalysisTime = Date.now();
 
   try {
     const response = await fetchWithRetry(`${CONFIG.API_BASE_URL}/sentiment`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json"
+        "Accept": "application/json",
+        "Authorization": getAuthHeader()
       },
       body: JSON.stringify({ text: validation.text })
     });
 
-    if (!response.ok) throw new Error("Error en el servidor");
-    
     const data = await response.json();
-    
+
     if (!isValidResponse(data)) {
       throw new Error("Respuesta inválida del servidor");
     }
-    
-    state.lastAnalysisTime = Date.now();
-    state.isOfflineMode = false;
+
     displayResult(data);
+    state.retryCount = 0;
+    state.isOfflineMode = false;
+
   } catch (err) {
     console.error("Error en análisis:", err);
 
@@ -278,9 +361,7 @@ async function analyzeSentiment() {
       handleError(err);
     }
   } finally {
-    // Loading OFF
-    elements.loader.classList.remove("active");
-    elements.analyzeBtn.disabled = false;
+    setLoadingState(false);
     state.isAnalyzing = false;
   }
 }
@@ -320,24 +401,14 @@ const showWarning = (msg) => {
   }, CONFIG.ERROR_DISPLAY_DURATION);
 };
 
-// UI - MOSTRAR RESULTADO (con fix para emoji en español e inglés)
+// UI - MOSTRAR RESULTADO
 const displayResult = (data) => {
-  const sentiment = (data.sentiment || "").toLowerCase();
+  const sentiment = data.sentiment.toLowerCase();
   const confidence = Math.round(data.confidence * 100);
 
-  // Detectar emoji y clase CSS (funciona con español e inglés)
-  let emoji = "😐";
-  let cssClass = CSS_CLASSES.NEUTRAL;
+  const config = SENTIMENT_CONFIG[sentiment] || SENTIMENT_CONFIG.neutral;
 
-  if (sentiment.includes("positiv")) {
-    emoji = "😊";
-    cssClass = CSS_CLASSES.POSITIVE;
-  } else if (sentiment.includes("negativ")) {
-    emoji = "😞";
-    cssClass = CSS_CLASSES.NEGATIVE;
-  }
-
-  elements.resultEmoji.textContent = emoji;
+  elements.resultEmoji.textContent = config.emoji;
   elements.resultSentiment.textContent = capitalizeFirst(data.sentiment);
   elements.resultConfidence.textContent = `Confianza: ${confidence}%`;
 
@@ -352,30 +423,50 @@ const displayResult = (data) => {
   }
 
   const offlineClass = data.isOffline ? 'offline-mode' : '';
-  elements.result.className = `result ${CSS_CLASSES.ACTIVE} ${cssClass} ${offlineClass}`;
+  elements.result.className = `result ${CSS_CLASSES.ACTIVE} ${config.cssClass} ${offlineClass}`;
 
   if (window.innerWidth < 768) {
     elements.result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 };
 
-// Mostrar error temporal
-function showError(msg) {
+// UI - MOSTRAR ERROR
+const showError = (msg) => {
   elements.error.textContent = msg;
-  elements.error.classList.add("active");
-  setTimeout(() => elements.error.classList.remove("active"), CONFIG.ERROR_DISPLAY_DURATION);
-}
+  elements.error.classList.add(CSS_CLASSES.ACTIVE);
+  elements.error.setAttribute('role', 'alert');
 
-// Inicialización
-document.addEventListener('DOMContentLoaded', () => {
-  // Restaurar borrador guardado
-  const savedDraft = localStorage.getItem(CONFIG.AUTOSAVE_KEY);
-  if (savedDraft) {
-    elements.textarea.value = savedDraft;
-    elements.charCount.textContent = savedDraft.length;
+  setTimeout(() => {
+    elements.error.classList.remove(CSS_CLASSES.ACTIVE);
+  }, CONFIG.ERROR_DISPLAY_DURATION);
+};
+
+// UI - ESTADO DE CARGA
+const setLoadingState = (isLoading) => {
+  elements.analyzeBtn.disabled = isLoading;
+  elements.analyzeBtn.textContent = isLoading ? "Analizando..." : "Analizar Sentimiento";
+  elements.analyzeBtn.setAttribute('aria-busy', isLoading);
+
+  if (isLoading) {
+    elements.loader.classList.add(CSS_CLASSES.ACTIVE);
+    elements.loader.setAttribute('aria-live', 'polite');
+  } else {
+    elements.loader.classList.remove(CSS_CLASSES.ACTIVE);
   }
+};
 
-  console.log('Sentimind v1.1.1 - Production (Public API)');
+// UI - RESET
+const resetUI = () => {
+  elements.result.className = "result";
+  elements.error.classList.remove(CSS_CLASSES.ACTIVE);
+};
+
+// INICIALIZACIÓN
+document.addEventListener('DOMContentLoaded', () => {
+  loadDraft();
+  updateCharCount();
+
+  console.log('Sentimind v1.2.0 - Production (Protected API)');
   console.log('API Endpoint:', CONFIG.API_BASE_URL);
 });
 
@@ -383,4 +474,13 @@ window.addEventListener('beforeunload', () => {
   if (elements.textarea.value.trim().length > 0) {
     localStorage.setItem(CONFIG.AUTOSAVE_KEY, elements.textarea.value);
   }
+});
+
+window.addEventListener('error', (event) => {
+  console.error('Error global capturado:', event.error);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Promise rechazada sin manejar:', event.reason);
+  event.preventDefault();
 });
