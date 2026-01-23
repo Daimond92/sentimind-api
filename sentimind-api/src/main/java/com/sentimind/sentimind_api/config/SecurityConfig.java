@@ -29,17 +29,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // ⭐ CORS AGREGADO
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Permitir acceso público al frontend y recursos estáticos
                         .requestMatchers("/", "/index.html", "/dashboard.html",
                                 "/*.css", "/*.js", "/*.png", "/*.jpg", "/*.svg",
-                                "/*.ico", "/favicon.ico", "/manifest.json", "/backup/**").permitAll()
-                        //  Permitir health checks y documentación
+                                "/*.ico", "/favicon.ico", "/manifest.json").permitAll()
+                        // Permitir health checks y documentación
                         .requestMatchers("/health", "/actuator/**",
                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/sentiment/**").permitAll()
+                        // API PROTEGIDA - Requiere autenticación
+                        .requestMatchers("/api/v1/sentiment/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(httpBasic -> {});
@@ -63,24 +64,14 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // CONFIGURACIÓN CORS - Lista para OCI y Ngrok
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // Permitir todos los orígenes (funciona con Ngrok, OCI, localhost)
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-
-        // Métodos HTTP permitidos
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // Headers permitidos
         configuration.setAllowedHeaders(Arrays.asList("*"));
-
-        // Permitir credenciales (cookies, auth headers)
         configuration.setAllowCredentials(true);
 
-        // Aplicar configuración a todos los endpoints
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 

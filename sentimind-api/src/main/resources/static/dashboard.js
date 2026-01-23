@@ -1,20 +1,18 @@
 const CONFIG = {
   // Detección automática de entorno
   API_BASE_URL: (() => {
-    // Desarrollo local
     if (window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1') {
       return "http://localhost:8080/api/v1";
     }
-
-    // Producción: Detectar automáticamente (funciona para Ngrok y OCI)
-    const protocol = window.location.protocol; // http: o https:
-    const host = window.location.host; // hostname:puerto
+    const protocol = window.location.protocol;
+    const host = window.location.host;
     return `${protocol}//${host}/api/v1`;
   })(),
+  // Credenciales de autenticación (deben coincidir con application.properties)
   AUTH: {
-    USERNAME: 'usuario',
-    PASSWORD: '123456'
+    USERNAME: 'admin',
+    PASSWORD: '12345'
   },
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000
@@ -89,7 +87,6 @@ const getSentimentClass = (sentiment) => {
 
 // Truncar texto largo
 const truncateText = (text, maxLength = 150) => {
-  //  text es undefined, null o vacío
   if (!text || typeof text !== 'string') {
     return 'Sin texto disponible';
   }
@@ -145,7 +142,6 @@ const loadAllAnalysis = async () => {
 
     console.log('Datos recibidos del backend:', data);
 
-    // Validar estructura de respuesta
     if (!Array.isArray(data)) {
       throw new Error('Respuesta inválida del servidor (no es un array)');
     }
@@ -168,13 +164,13 @@ const loadAllAnalysis = async () => {
 const updateStats = () => {
   const total = state.allAnalysis.length;
   const positive = state.allAnalysis.filter(a =>
-    a.sentiment && a.sentiment.toLowerCase() === 'positivo'
+      a.sentiment && a.sentiment.toLowerCase() === 'positivo'
   ).length;
   const negative = state.allAnalysis.filter(a =>
-    a.sentiment && a.sentiment.toLowerCase() === 'negativo'
+      a.sentiment && a.sentiment.toLowerCase() === 'negativo'
   ).length;
   const neutral = state.allAnalysis.filter(a =>
-    a.sentiment && a.sentiment.toLowerCase() === 'neutro'
+      a.sentiment && a.sentiment.toLowerCase() === 'neutro'
   ).length;
 
   elements.totalAnalysis.textContent = total;
@@ -195,7 +191,6 @@ const renderAnalysisList = () => {
 
   elements.emptyState.style.display = 'none';
 
-  // Ordenar por fecha (más recientes primero)
   const sortedAnalysis = [...state.filteredAnalysis].sort((a, b) => {
     const dateA = a.timestamp ? new Date(a.timestamp) : new Date(0);
     const dateB = b.timestamp ? new Date(b.timestamp) : new Date(0);
@@ -203,7 +198,6 @@ const renderAnalysisList = () => {
   });
 
   container.innerHTML = sortedAnalysis.map(analysis => {
-    // Asegurar que todos los campos existen
     const sentiment = analysis.sentiment || 'Desconocido';
     const confidence = typeof analysis.confidence === 'number' ? analysis.confidence : 0;
     const text = analysis.text || 'Sin texto disponible';
@@ -243,7 +237,7 @@ const filterAnalysis = (sentiment) => {
     state.filteredAnalysis = state.allAnalysis;
   } else {
     state.filteredAnalysis = state.allAnalysis.filter(a =>
-      a.sentiment && a.sentiment.toLowerCase() === sentiment
+        a.sentiment && a.sentiment.toLowerCase() === sentiment
     );
   }
 
@@ -287,7 +281,7 @@ elements.retryBtn.addEventListener('click', () => {
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Dashboard Sentimind v1.0.1 - Inicializado');
+  console.log('Dashboard Sentimind v1.2.0 - Protected API');
   console.log('API Endpoint:', CONFIG.API_BASE_URL);
   loadAllAnalysis();
 });
