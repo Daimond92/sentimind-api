@@ -33,12 +33,6 @@ const CSS_CLASSES = {
   NEUTRAL: 'neutral'
 };
 
-const SENTIMENT_CONFIG = {
-  positive: { emoji: '😊', cssClass: CSS_CLASSES.POSITIVE },
-  negative: { emoji: '😞', cssClass: CSS_CLASSES.NEGATIVE },
-  neutral: { emoji: '😐', cssClass: CSS_CLASSES.NEUTRAL }
-};
-
 // ESTADO GLOBAL
 const state = {
   isAnalyzing: false,
@@ -328,7 +322,7 @@ async function analyzeSentiment() {
   state.lastAnalysisTime = Date.now();
 
   try {
-    const response = await fetchWithRetry(`${CONFIG.API_BASE_URL}/sentiment`, {
+    const response = await fetchWithRetry(`${CONFIG.API_BASE_URL}/sentiment/analyze`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -401,14 +395,24 @@ const showWarning = (msg) => {
   }, CONFIG.ERROR_DISPLAY_DURATION);
 };
 
-// UI - MOSTRAR RESULTADO
+// UI - MOSTRAR RESULTADO (con fix para emoji en español e inglés)
 const displayResult = (data) => {
-  const sentiment = data.sentiment.toLowerCase();
+  const sentiment = (data.sentiment || "").toLowerCase();
   const confidence = Math.round(data.confidence * 100);
 
-  const config = SENTIMENT_CONFIG[sentiment] || SENTIMENT_CONFIG.neutral;
+  // Detectar emoji y clase CSS (funciona con español e inglés)
+  let emoji = "😐";
+  let cssClass = CSS_CLASSES.NEUTRAL;
 
-  elements.resultEmoji.textContent = config.emoji;
+  if (sentiment.includes("positiv")) {
+    emoji = "😊";
+    cssClass = CSS_CLASSES.POSITIVE;
+  } else if (sentiment.includes("negativ")) {
+    emoji = "😞";
+    cssClass = CSS_CLASSES.NEGATIVE;
+  }
+
+  elements.resultEmoji.textContent = emoji;
   elements.resultSentiment.textContent = capitalizeFirst(data.sentiment);
   elements.resultConfidence.textContent = `Confianza: ${confidence}%`;
 
@@ -423,7 +427,7 @@ const displayResult = (data) => {
   }
 
   const offlineClass = data.isOffline ? 'offline-mode' : '';
-  elements.result.className = `result ${CSS_CLASSES.ACTIVE} ${config.cssClass} ${offlineClass}`;
+  elements.result.className = `result ${CSS_CLASSES.ACTIVE} ${cssClass} ${offlineClass}`;
 
   if (window.innerWidth < 768) {
     elements.result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -466,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadDraft();
   updateCharCount();
 
-  console.log('Sentimind v1.2.0 - Production (Protected API)');
+  console.log('Sentimind v1.2.1 - Production (Protected API + Emoji Fix)');
   console.log('API Endpoint:', CONFIG.API_BASE_URL);
 });
 
