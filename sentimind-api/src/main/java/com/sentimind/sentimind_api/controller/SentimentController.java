@@ -30,7 +30,7 @@ public class SentimentController {
     public ResponseEntity<SentimentResponse> analyze(@Valid @RequestBody SentimentRequest request) {
         // Llama a tu lógica en el Service (David)
         SentimentResponse response = sentimentService.analyzeSentiment(request);
-        
+
         // Retornamos un 201 Created o 200 OK
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -39,5 +39,11 @@ public class SentimentController {
     public ResponseEntity<List<SentimentResponse>> getAllAnalysis() {
         List<SentimentResponse> allAnalysis = sentimentService.getAllAnalysis();
         return ResponseEntity.ok(allAnalysis);
+    }
+    @DeleteMapping("/all")
+    @Operation(summary = "Elimina todos los análisis de sentimiento de la base de datos")
+    public ResponseEntity<Void> deleteAllAnalysis() {
+        sentimentService.deleteAllAnalysis();
+        return ResponseEntity.noContent().build();
     }
 }
