@@ -118,3 +118,55 @@ button:disabled{background:#374151;cursor:not-allowed}
 
 footer{margin-top:30px;text-align:center}
 .log3{height:50px;opacity:0.9}
+
+
+
+/* Footer */
+footer {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.footer-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #374151, transparent);
+  margin-bottom: 20px;
+}
+
+.footer-text {
+  color: #9ca3af;
+  font-size: 0.85em;
+  margin-bottom: 15px;
+}
+
+.footer-logos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.footer-logo-link {
+  transition: transform 0.2s, opacity 0.2s;
+  opacity: 0.8;
+}
+
+.footer-logo-link:hover {
+  transform: translateY(-3px);
+  opacity: 1;
+}
+
+.footer-logo {
+  height: 40px;
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
+}
+
+.footer-copyright {
+  color: #6b7280;
+  font-size: 0.8em;
+  margin-top: 10px;
+}
