@@ -1,5 +1,5 @@
 # Etapa 1: Construcción
-FROM maven:3.9.9-eclipse-temurin-17-alpine AS build
+FROM maven:3.9.9-eclipse-temurin AS build
 WORKDIR /app
 
 # Copiar archivos de configuración de Maven
@@ -17,8 +17,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Etapa 2: Imagen final ligera
-FROM eclipse-temurin:17-jre-alpine
-WORKDIR /app
+FROM eclipse-temurin:17-jre
 
 # Copiar el JAR generado desde la etapa de build
 COPY --from=build /app/target/*.jar app.jar
