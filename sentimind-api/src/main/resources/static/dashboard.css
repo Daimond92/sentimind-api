@@ -399,4 +399,26 @@
   .error-state h3 {
     font-size: 1.2em;
   }
+  /* Delete Button */
+  .delete-btn {
+    padding: 12px 20px;
+    background: linear-gradient(180deg, rgba(248, 113, 113, 0.18), rgba(248, 113, 113, 0.05));
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: var(--border-radius-md);
+    color: #f87171;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .delete-btn:hover:not(:disabled) {
+    background: linear-gradient(180deg, rgba(248, 113, 113, 0.28), rgba(248, 113, 113, 0.1));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(248, 113, 113, 0.2);
+  }
+
+  .delete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }

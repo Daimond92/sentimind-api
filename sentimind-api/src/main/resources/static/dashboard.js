@@ -36,6 +36,7 @@ const elements = {
   filterSentiment: document.getElementById('filterSentiment'),
   refreshBtn: document.getElementById('refreshBtn'),
   retryBtn: document.getElementById('retryBtn'),
+  deleteAllBtn: document.getElementById('deleteAllBtn'),
   totalAnalysis: document.getElementById('totalAnalysis'),
   totalPositive: document.getElementById('totalPositive'),
   totalNegative: document.getElementById('totalNegative'),
@@ -251,6 +252,7 @@ const setLoadingState = (isLoading) => {
   elements.resultsList.style.display = isLoading ? 'none' : 'block';
   elements.refreshBtn.disabled = isLoading;
   elements.filterSentiment.disabled = isLoading;
+  elements.deleteAllBtn.disabled = isLoading;
 };
 
 // Mostrar error
@@ -266,6 +268,39 @@ const hideError = () => {
   elements.errorState.style.display = 'none';
 };
 
+// Eliminar todos los análisis
+const deleteAllAnalysis = async () => {
+  const confirmed = confirm('¿Estás seguro de que querés borrar TODOS los análisis? Esta acción no se puede deshacer.');
+
+  if (!confirmed) return;
+
+  try {
+    elements.deleteAllBtn.disabled = true;
+    elements.deleteAllBtn.textContent = '⏳ Borrando...';
+
+    const response = await fetchWithRetry(`${CONFIG.API_BASE_URL}/sentiment/all`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': getAuthHeader()
+      }
+    });
+
+    if (response.status === 204 || response.ok) {
+      state.allAnalysis = [];
+      state.filteredAnalysis = [];
+      updateStats();
+      renderAnalysisList();
+      console.log('Todos los análisis fueron eliminados');
+    }
+  } catch (err) {
+    console.error('Error eliminando análisis:', err);
+    alert('Error al borrar los datos: ' + err.message);
+  } finally {
+    elements.deleteAllBtn.disabled = false;
+    elements.deleteAllBtn.textContent = '🗑️ Borrar Todo';
+  }
+};
+
 // Event Listeners
 elements.filterSentiment.addEventListener('change', (e) => {
   filterAnalysis(e.target.value);
@@ -279,9 +314,11 @@ elements.retryBtn.addEventListener('click', () => {
   loadAllAnalysis();
 });
 
+elements.deleteAllBtn.addEventListener('click', deleteAllAnalysis);
+
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Dashboard Sentimind v1.2.0 - Protected API');
+  console.log('Dashboard Sentimind v1.3.0 - Con botón Borrar Todo');
   console.log('API Endpoint:', CONFIG.API_BASE_URL);
   loadAllAnalysis();
 });

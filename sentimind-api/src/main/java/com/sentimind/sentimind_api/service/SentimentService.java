@@ -8,4 +8,5 @@ import java.util.List;
 public interface SentimentService {
     SentimentResponse analyzeSentiment(SentimentRequest request);
     List<SentimentResponse> getAllAnalysis();
+    void deleteAllAnalysis();
 }

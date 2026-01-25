@@ -65,4 +65,8 @@ public SentimentResponse analyzeSentiment(SentimentRequest request) {
                 ))
                 .collect(Collectors.toList());
     }
+    @Override
+    public void deleteAllAnalysis() {
+        sentimentRepository.deleteAll();
+    }
 }
