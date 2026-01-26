@@ -4,6 +4,19 @@ Sentimind es una API REST profesional desarrollada con **Spring Boot** diseñada
 
 ---
 
+## 🚀 Demo en la Nube (Oracle Cloud Infrastructure)
+
+Demo público disponible durante el hackathon:
+http://139.177.101.190:8080
+
+Swagger UI:
+http://139.177.101.190:8080/swagger-ui.html
+
+Nota: El servicio estará disponible únicamente durante el periodo del hackathon.
+Para ejecución local, utiliza el flujo con Docker descrito más abajo.
+
+---
+
 ## 🛠️ Tecnologías y Versiones
 
 ### 🤖 Equipo Data Science
